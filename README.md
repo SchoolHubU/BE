@@ -112,14 +112,14 @@ Resolves: #12
     <!-- 강현민 -->
     <td align="center" width="200">
       <a href="https://github.com/rkddk7165">
-        <img src="assets/team/kanghyeonmin.png" width="150" style="border-radius:10px;" />
+         <img src="./assets/team/develop.png2" width="150">
         <br><b>강현민</b>
       </a>
     </td>
     <!-- 이승복 -->
     <td align="center" width="200">
       <a href="https://github.com/lsb530">
-        <img src="assets/team/leesungbok.png" width="150" style="border-radius:10px;" />
+        <img src="./assets/team/develop.png2" width="150">
         <br><b>이승복</b>
       </a>
     </td>
