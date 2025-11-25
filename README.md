@@ -20,6 +20,19 @@
 
 ---
 
+
+## 🗂️ ERD — Database Schema
+
+아래는 SHU(ShoolHubYou) 백엔드의 전체 데이터베이스 구조(ERD)입니다.  
+회원, 게시글, 댓글, 좋아요, 채팅, 신고/제재, 학교 인증 등  
+서비스 운영에 필요한 모든 도메인을 포함합니다.
+
+<p align="center">
+  <img src="./assets/erd.png" width="100%" />
+</p>
+
+---
+
 ## 📂 프로젝트 구조
 (추후 작성)
 
