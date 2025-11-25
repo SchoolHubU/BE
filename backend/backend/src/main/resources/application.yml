@@ -33,7 +33,7 @@ logging:
     org.hibernate.SQL: DEBUG
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE   # 바인딩 값 출력
     org.springframework.web: INFO
-    com.shu.backend: DEBUG      # 너희 프로젝트 패키지 기준
+    com.shu.backend: DEBUG      # 프로젝트 패키지 기준
 
 jwt:
   secret: "REPLACE-WITH-YOUR-VERY-SECRET-KEY-THAT-IS-VERY-LONG-AND-RANDOM"
