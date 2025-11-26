@@ -5,12 +5,15 @@ import com.shu.backend.domain.report.enums.ReportReason;
 import com.shu.backend.domain.user.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Penalty extends BaseEntity {
 
     @Id
