@@ -4,10 +4,14 @@ import com.shu.backend.domain.school.School;
 import com.shu.backend.domain.user.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Board extends BaseEntity {
 
     @Id

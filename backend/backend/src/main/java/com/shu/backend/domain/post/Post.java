@@ -5,10 +5,13 @@ import com.shu.backend.domain.post.enums.PostStatus;
 import com.shu.backend.domain.user.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class Post extends BaseEntity {
 
     @Id

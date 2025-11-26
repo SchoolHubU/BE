@@ -5,13 +5,16 @@ import com.shu.backend.domain.user.enums.UserRole;
 import com.shu.backend.domain.user.enums.UserStatus;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AccessLevel;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class User extends BaseEntity {
 
     @Id
