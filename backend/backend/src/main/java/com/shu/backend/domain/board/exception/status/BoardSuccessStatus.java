@@ -22,11 +22,20 @@ public enum BoardSuccessStatus implements BaseCode {
 
     @Override
     public ReasonDto getReasonHttpStatus() {
-        return null;
+        return ReasonDto.builder()
+                .httpStatus(httpStatus)
+                .isSuccess(true)
+                .code(code)
+                .message(message)
+                .build();
     }
 
     @Override
     public ReasonDto getReason() {
-        return null;
+        return ReasonDto.builder()
+                .isSuccess(true)
+                .code(code)
+                .message(message)
+                .build();
     }
 }
