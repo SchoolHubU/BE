@@ -19,7 +19,7 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class UserSchoolVerification {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private java.lang.Long id;
 
     @NotNull
     private LocalDateTime verified_at;

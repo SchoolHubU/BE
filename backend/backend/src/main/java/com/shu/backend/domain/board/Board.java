@@ -1,28 +1,27 @@
 package com.shu.backend.domain.board;
 
 import com.shu.backend.domain.school.School;
-import com.shu.backend.domain.user.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Board extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private java.lang.Long id;
 
     @Column(nullable = false, unique = true)
     private String title;
 
     private String description;
 
+    @Builder.Default
     @Column(nullable = false)
     private boolean active = true;
 

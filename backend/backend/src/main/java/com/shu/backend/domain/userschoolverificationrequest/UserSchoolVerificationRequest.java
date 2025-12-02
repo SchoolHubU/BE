@@ -20,7 +20,7 @@ public class UserSchoolVerificationRequest {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private Long id;
+    private java.lang.Long id;
 
     @NotNull
     @Column(name = "request_image_url", nullable = false)
@@ -42,7 +42,7 @@ public class UserSchoolVerificationRequest {
     private LocalDateTime processedAt;
 
     @Column(name = "processed_by")
-    private Long processedBy;   // 운영자 userId
+    private java.lang.Long processedBy;   // 운영자 userId
 
     @ManyToOne(fetch = LAZY)
     @JoinColumn(name = "user_id", nullable = false)
@@ -64,7 +64,7 @@ public class UserSchoolVerificationRequest {
     }
 
     // 승인 처리
-    public void approve(Long adminUserId, String adminComment) {
+    public void approve(java.lang.Long adminUserId, String adminComment) {
         this.status = VerificationStatus.APPROVED;
         this.processedBy = adminUserId;
         this.processedAt = LocalDateTime.now();
@@ -72,7 +72,7 @@ public class UserSchoolVerificationRequest {
     }
 
     // 거절 처리
-    public void reject(Long adminUserId, String adminComment) {
+    public void reject(java.lang.Long adminUserId, String adminComment) {
         this.status = VerificationStatus.REJECTED;
         this.processedBy = adminUserId;
         this.processedAt = LocalDateTime.now();
