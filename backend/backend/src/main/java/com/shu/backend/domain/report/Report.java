@@ -2,7 +2,7 @@ package com.shu.backend.domain.report;
 
 import com.shu.backend.domain.report.enums.ReportReason;
 import com.shu.backend.domain.report.enums.TargetType;
-import com.shu.backend.domain.user.User;
+import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

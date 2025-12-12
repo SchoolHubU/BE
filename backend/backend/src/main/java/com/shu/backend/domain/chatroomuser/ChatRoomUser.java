@@ -1,7 +1,7 @@
 package com.shu.backend.domain.chatroomuser;
 
 import com.shu.backend.domain.chatroom.ChatRoom;
-import com.shu.backend.domain.user.User;
+import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.Builder;

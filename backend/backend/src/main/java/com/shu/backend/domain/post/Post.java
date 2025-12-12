@@ -2,7 +2,7 @@ package com.shu.backend.domain.post;
 
 import com.shu.backend.domain.board.Board;
 import com.shu.backend.domain.post.enums.PostStatus;
-import com.shu.backend.domain.user.User;
+import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

@@ -2,6 +2,8 @@ server:
   port: 8080
 
 spring:
+  profiles:
+    active: local
   datasource:
     url: jdbc:mysql://localhost:3306/shu?serverTimezone=Asia/Seoul&characterEncoding=UTF-8
     username: root
@@ -36,9 +38,9 @@ logging:
     com.shu.backend: DEBUG      # 프로젝트 패키지 기준
 
 jwt:
-  secret: "REPLACE-WITH-YOUR-VERY-SECRET-KEY-THAT-IS-VERY-LONG-AND-RANDOM"
-  access-token-expiration: 3600000      # 1시간
-  refresh-token-expiration: 1209600000  # 14일
+  secret: c3ByaW5nLWJvb3Qtc2VjdXJpdHktand0LXR1dG9yaWFsLWppd29vbi1zcHJpbmctYm9vdC1zZWN1cml0eS1qd3QtdHV0b3JpYWwK
+  access-token-expiration: 3600000        # 1시간 (ms)
+  refresh-token-expiration: 1209600000    # 14일 (ms)
 
 cors:
   allowed-origins: "http://localhost:3000, https://your-app-domain.com"
@@ -49,3 +51,20 @@ cors:
 websocket:
   endpoint: "/ws/chat"
   allowed-origins: "*"  # 개발 단계 / 운영 시 실제 도메인만 허용
+
+# 로컬 파일 저장용 설정
+file:
+  upload-dir:
+    student-card: uploads/student-card   # 실제 로컬 폴더 (프로젝트 기준)
+  storage:
+    bucket: local-bucket                 # 로컬에선 의미 거의 없음
+    student-card-dir: student-card
+    base-url: http://localhost:8080/uploads
+
+
+  # S3 기반 파일 스토리지 설정
+#  file:
+#    storage:
+#      bucket: shu-student-card                # 실제 S3 버킷명
+#      student-card-dir: student-card          # S3 내부 디렉토리(prefix)
+#      base-url: https://cdn.schoolhubu.com    # CloudFront or S3 정적 URL

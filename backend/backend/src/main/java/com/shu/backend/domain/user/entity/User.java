@@ -1,24 +1,27 @@
-package com.shu.backend.domain.user;
+package com.shu.backend.domain.user.entity;
 
 import com.shu.backend.domain.school.School;
 import com.shu.backend.domain.user.enums.UserRole;
 import com.shu.backend.domain.user.enums.UserStatus;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 import java.time.LocalDateTime;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class User extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private java.lang.Long id;
+    private Long id;
+
+    @Column(name ="name", nullable = false)
+    private String username;
 
     @Column(name = "email", nullable = false, unique = true)
     private String email;
@@ -49,6 +52,10 @@ public class User extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "school_id", nullable = false)
     private School school;
+
+    //학교 인증 o,x 여부
+    @Column(name="verified",nullable = false)
+    private boolean verified;
 
 
 

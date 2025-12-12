@@ -1,7 +1,7 @@
 package com.shu.backend.domain.userschoolverification;
 
 import com.shu.backend.domain.school.School;
-import com.shu.backend.domain.user.User;
+import com.shu.backend.domain.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -19,7 +19,7 @@ import static lombok.AccessLevel.PROTECTED;
 @NoArgsConstructor(access = PROTECTED)
 public class UserSchoolVerification {
     @Id @GeneratedValue(strategy = GenerationType.IDENTITY)
-    private java.lang.Long id;
+    private Long id;
 
     @NotNull
     private LocalDateTime verified_at;

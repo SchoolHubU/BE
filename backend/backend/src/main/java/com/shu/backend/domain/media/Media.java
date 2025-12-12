@@ -2,7 +2,7 @@ package com.shu.backend.domain.media;
 
 import com.shu.backend.domain.media.enums.MediaTargetType;
 import com.shu.backend.domain.media.enums.MediaType;
-import com.shu.backend.domain.user.User;
+import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.AccessLevel;

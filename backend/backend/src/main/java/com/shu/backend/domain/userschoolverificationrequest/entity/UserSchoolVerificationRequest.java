@@ -1,7 +1,8 @@
-package com.shu.backend.domain.userschoolverificationrequest;
+package com.shu.backend.domain.userschoolverificationrequest.entity;
 
 import com.shu.backend.domain.school.School;
-import com.shu.backend.domain.user.User;
+import com.shu.backend.domain.user.entity.User;
+import com.shu.backend.domain.userschoolverificationrequest.VerificationStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
