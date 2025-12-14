@@ -35,7 +35,7 @@ public class User extends BaseEntity {
     @Column(name = "profile_image_url")
     private String profileImageUrl = "default_profile.png";
 
-    @Column(name = "is_write_banned", nullable = false)
+    @Column(name = "is_write_banned")
     private Boolean isWriteBanned = false;
 
     @Column(name = "write_ban_expired_at")
@@ -56,6 +56,11 @@ public class User extends BaseEntity {
     //학교 인증 o,x 여부
     @Column(name="verified",nullable = false)
     private boolean verified;
+
+    // 학교 인증 완료 처리
+    public void verifySchool() {
+        this.verified = true;
+    }
 
 
 

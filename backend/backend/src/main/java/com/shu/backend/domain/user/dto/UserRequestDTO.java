@@ -1,14 +1,8 @@
 package com.shu.backend.domain.user.dto;
 
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.Email;
-import jakarta.validation.constraints.NotBlank;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.*;
+import lombok.*;
 
 public class UserRequestDTO {
 
@@ -62,6 +56,16 @@ public class UserRequestDTO {
         )
         @Schema(description = "프로필 이미지 URL (선택)", example = "https://cdn.teenple.com/profile/default.png")
         private String profileImageUrl;
+    }
+
+    @Getter
+    @Setter
+    @NoArgsConstructor
+    public static class VerificationReapply {
+        @NotBlank private String email;
+        @NotBlank private String password;
+        @NotNull  private Long schoolId;
+        @NotBlank private String studentIdImageUrl;
     }
 
 }

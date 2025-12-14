@@ -1,4 +1,4 @@
-package com.shu.backend.domain.userschoolverification;
+package com.shu.backend.domain.verification.entity;
 
 import com.shu.backend.domain.school.School;
 import com.shu.backend.domain.user.entity.User;
