@@ -1,8 +1,8 @@
-package com.shu.backend.domain.userschoolverificationrequest.entity;
+package com.shu.backend.domain.verification.entity;
 
 import com.shu.backend.domain.school.School;
 import com.shu.backend.domain.user.entity.User;
-import com.shu.backend.domain.userschoolverificationrequest.VerificationStatus;
+import com.shu.backend.domain.verification.status.VerificationStatus;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import lombok.Builder;
@@ -65,7 +65,7 @@ public class UserSchoolVerificationRequest {
     }
 
     // 승인 처리
-    public void approve(java.lang.Long adminUserId, String adminComment) {
+    public void approve(Long adminUserId, String adminComment) {
         this.status = VerificationStatus.APPROVED;
         this.processedBy = adminUserId;
         this.processedAt = LocalDateTime.now();
@@ -73,7 +73,7 @@ public class UserSchoolVerificationRequest {
     }
 
     // 거절 처리
-    public void reject(java.lang.Long adminUserId, String adminComment) {
+    public void reject(Long adminUserId, String adminComment) {
         this.status = VerificationStatus.REJECTED;
         this.processedBy = adminUserId;
         this.processedAt = LocalDateTime.now();

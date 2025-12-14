@@ -1,7 +1,10 @@
 package com.shu.backend.global.swagger;
 
+import io.swagger.v3.oas.models.Components;
 import io.swagger.v3.oas.models.OpenAPI;
 import io.swagger.v3.oas.models.info.Info;
+import io.swagger.v3.oas.models.security.SecurityRequirement;
+import io.swagger.v3.oas.models.security.SecurityScheme;
 import org.springdoc.core.models.GroupedOpenApi;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -11,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 public class SwaggerConfig {
 
     private static final String DOMAIN_BASE = "com.shu.backend.domain";
+    private static final String SECURITY_SCHEME_NAME = "bearerAuth";
 
-    // 전체 공통 문서 정보
     @Bean
     public OpenAPI openAPI() {
         return new OpenAPI()
@@ -20,12 +23,17 @@ public class SwaggerConfig {
                         .title("SchoolHubU API")
                         .version("v1")
                         .description("SchoolHubU 개발용 Swagger API 문서")
-                );
+                )
+                .addSecurityItem(new SecurityRequirement().addList(SECURITY_SCHEME_NAME))
+                .components(new Components().addSecuritySchemes(
+                        SECURITY_SCHEME_NAME,
+                        new SecurityScheme()
+                                .type(SecurityScheme.Type.HTTP)
+                                .scheme("bearer")
+                                .bearerFormat("JWT")
+                ));
     }
 
-    // ================== 도메인별 그룹 설정 ==================
-
-    // 유저 관련 (user, usersetting, school verification)
     @Bean
     public GroupedOpenApi userApi() {
         return GroupedOpenApi.builder()
@@ -33,13 +41,11 @@ public class SwaggerConfig {
                 .packagesToScan(
                         DOMAIN_BASE + ".user",
                         DOMAIN_BASE + ".usersetting",
-                        DOMAIN_BASE + ".userschoolverification",
-                        DOMAIN_BASE + ".userschoolverificationrequest"
+                        DOMAIN_BASE + ".verification"
                 )
                 .build();
     }
 
-    // 학교 / 게시판 (board, school)
     @Bean
     public GroupedOpenApi boardSchoolApi() {
         return GroupedOpenApi.builder()
@@ -51,7 +57,6 @@ public class SwaggerConfig {
                 .build();
     }
 
-    //  게시글 / 댓글 / 반응 / 미디어
     @Bean
     public GroupedOpenApi postApi() {
         return GroupedOpenApi.builder()
@@ -65,7 +70,6 @@ public class SwaggerConfig {
                 .build();
     }
 
-    // 채팅 관련 (채팅방, 메시지, 유저-방 매핑)
     @Bean
     public GroupedOpenApi chatApi() {
         return GroupedOpenApi.builder()
@@ -78,7 +82,6 @@ public class SwaggerConfig {
                 .build();
     }
 
-    // 알림
     @Bean
     public GroupedOpenApi notificationApi() {
         return GroupedOpenApi.builder()
@@ -87,7 +90,6 @@ public class SwaggerConfig {
                 .build();
     }
 
-    // 신고 / 제재
     @Bean
     public GroupedOpenApi reportPenaltyApi() {
         return GroupedOpenApi.builder()
@@ -98,7 +100,4 @@ public class SwaggerConfig {
                 )
                 .build();
     }
-
-
-
 }
