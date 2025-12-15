@@ -1,9 +1,11 @@
-package com.shu.backend.domain.board;
+package com.shu.backend.domain.board.service;
 
 import com.shu.backend.domain.board.dto.BoardCreateRequest;
 import com.shu.backend.domain.board.dto.BoardResponse;
-import com.shu.backend.domain.school.School;
-import com.shu.backend.domain.school.SchoolRepository;
+import com.shu.backend.domain.board.entity.Board;
+import com.shu.backend.domain.board.repository.BoardRepository;
+import com.shu.backend.domain.school.entity.School;
+import com.shu.backend.domain.school.repository.SchoolRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

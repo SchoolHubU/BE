@@ -1,6 +1,6 @@
 package com.shu.backend.domain.verification.entity;
 
-import com.shu.backend.domain.school.School;
+import com.shu.backend.domain.school.entity.School;
 import com.shu.backend.domain.user.entity.User;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;

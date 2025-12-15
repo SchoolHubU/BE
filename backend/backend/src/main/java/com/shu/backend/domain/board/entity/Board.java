@@ -1,6 +1,6 @@
-package com.shu.backend.domain.board;
+package com.shu.backend.domain.board.entity;
 
-import com.shu.backend.domain.school.School;
+import com.shu.backend.domain.school.entity.School;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
 import lombok.*;

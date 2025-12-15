@@ -1,21 +1,21 @@
-package com.shu.backend.domain.board.exception.status;
+package com.shu.backend.domain.region.exception.status;
 
-import com.shu.backend.global.apiPayload.code.BaseCode;
+
+
 import com.shu.backend.global.apiPayload.code.BaseErrorCode;
 import com.shu.backend.global.apiPayload.code.ErrorReasonDto;
-import com.shu.backend.global.apiPayload.code.ReasonDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum BoardErrorStatus implements BaseErrorCode {
+public enum RegionErrorStatus implements BaseErrorCode {
+    //400
+    REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "REGION4000", "존재하지 않는 지역입니다."),
+    REQUEST_IMAGE_REQUIRED(HttpStatus.NOT_FOUND, "REGION4001", "이미지는 필수입니다.");
 
-    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "BOARD4000", "게시판이 존재하지 않습니다.")
 
-
-    ;
 
     private final HttpStatus httpStatus;
     private final String code;

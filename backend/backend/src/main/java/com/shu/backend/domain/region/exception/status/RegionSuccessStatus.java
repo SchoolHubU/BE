@@ -1,8 +1,7 @@
-package com.shu.backend.domain.board.exception.status;
+package com.shu.backend.domain.region.exception.status;
+
 
 import com.shu.backend.global.apiPayload.code.BaseCode;
-import com.shu.backend.global.apiPayload.code.BaseErrorCode;
-import com.shu.backend.global.apiPayload.code.ErrorReasonDto;
 import com.shu.backend.global.apiPayload.code.ReasonDto;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -10,31 +9,29 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum BoardErrorStatus implements BaseErrorCode {
+public enum RegionSuccessStatus implements BaseCode {
 
-    BOARD_NOT_FOUND(HttpStatus.NOT_FOUND, "BOARD4000", "게시판이 존재하지 않습니다.")
-
-
-    ;
+    //에러 필드 추가
+    _REGION_FOUND(HttpStatus.OK, "REGION2001", "지역 조회 성공");
 
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;
 
     @Override
-    public ErrorReasonDto getReason() {
-        return ErrorReasonDto.builder()
-                .isSuccess(false)
+    public ReasonDto getReason() {
+        return ReasonDto.builder()
+                .isSuccess(true)
                 .code(code)
                 .message(message)
                 .build();
     }
 
     @Override
-    public ErrorReasonDto getReasonHttpStatus() {
-        return ErrorReasonDto.builder()
+    public ReasonDto getReasonHttpStatus() {
+        return ReasonDto.builder()
                 .httpStatus(httpStatus)
-                .isSuccess(false)
+                .isSuccess(true)
                 .code(code)
                 .message(message)
                 .build();

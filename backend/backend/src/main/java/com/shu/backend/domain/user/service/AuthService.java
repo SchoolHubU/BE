@@ -1,7 +1,7 @@
 package com.shu.backend.domain.user.service;
 
-import com.shu.backend.domain.school.School;
-import com.shu.backend.domain.school.SchoolRepository;
+import com.shu.backend.domain.school.entity.School;
+import com.shu.backend.domain.school.repository.SchoolRepository;
 import com.shu.backend.domain.school.exception.SchoolException;
 import com.shu.backend.domain.school.exception.status.SchoolErrorStatus;
 import com.shu.backend.domain.user.dto.LoginResponseDTO;

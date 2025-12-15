@@ -1,7 +1,7 @@
 package com.shu.backend.global.init;
 
-import com.shu.backend.domain.school.School;
-import com.shu.backend.domain.school.SchoolRepository;
+import com.shu.backend.domain.school.entity.School;
+import com.shu.backend.domain.school.repository.SchoolRepository;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.domain.user.enums.UserRole;
 import com.shu.backend.domain.user.enums.UserStatus;

@@ -1,7 +1,7 @@
 package com.shu.backend.domain.comment;
 
 import com.shu.backend.domain.comment.enums.CommentStatus;
-import com.shu.backend.domain.post.Post;
+import com.shu.backend.domain.post.entity.Post;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;

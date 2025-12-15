@@ -1,6 +1,6 @@
-package com.shu.backend.domain.post;
+package com.shu.backend.domain.post.entity;
 
-import com.shu.backend.domain.board.Board;
+import com.shu.backend.domain.board.entity.Board;
 import com.shu.backend.domain.post.enums.PostStatus;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.global.common.BaseEntity;

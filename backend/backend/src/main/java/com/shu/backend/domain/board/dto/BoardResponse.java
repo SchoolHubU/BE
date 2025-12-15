@@ -1,6 +1,6 @@
 package com.shu.backend.domain.board.dto;
 
-import com.shu.backend.domain.board.Board;
+import com.shu.backend.domain.board.entity.Board;
 import lombok.Builder;
 import lombok.Getter;
 

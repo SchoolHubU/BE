@@ -1,6 +1,6 @@
 package com.shu.backend.domain.user.entity;
 
-import com.shu.backend.domain.school.School;
+import com.shu.backend.domain.school.entity.School;
 import com.shu.backend.domain.user.enums.UserRole;
 import com.shu.backend.domain.user.enums.UserStatus;
 import com.shu.backend.global.common.BaseEntity;
