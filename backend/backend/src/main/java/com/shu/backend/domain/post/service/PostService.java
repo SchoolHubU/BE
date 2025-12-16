@@ -5,7 +5,11 @@ import com.shu.backend.domain.board.enums.BoardScope;
 import com.shu.backend.domain.board.exception.BoardException;
 import com.shu.backend.domain.board.exception.status.BoardErrorStatus;
 import com.shu.backend.domain.board.repository.BoardRepository;
+import com.shu.backend.domain.comment.dto.CommentResponse;
+import com.shu.backend.domain.comment.repository.CommentRepository;
 import com.shu.backend.domain.post.dto.PostCreateRequest;
+import com.shu.backend.domain.post.dto.PostDetailResponse;
+import com.shu.backend.domain.post.dto.PostResponse;
 import com.shu.backend.domain.post.dto.PostUpdateRequest;
 import com.shu.backend.domain.post.entity.Post;
 import com.shu.backend.domain.post.enums.PostStatus;
@@ -22,6 +26,9 @@ import org.springframework.data.domain.Slice;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 @Service
 @Transactional(readOnly = true)
 @RequiredArgsConstructor
@@ -30,6 +37,7 @@ public class PostService {
     private final PostRepository postRepository;
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
+    private final CommentRepository commentRepository;
 
     @Transactional
     public Long createPost(Long boardId, PostCreateRequest req) {
@@ -81,6 +89,7 @@ public class PostService {
                 .title(title)
                 .content(content)
                 .anonymous(req.isAnonymous())
+                .postStatus(PostStatus.ACTIVE)
                 .board(board)
                 .user(user)
                 .build();
@@ -89,6 +98,7 @@ public class PostService {
         return post.getId();
     }
 
+    @Transactional
     public Long updatePost(Long postId, PostUpdateRequest req){
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(PostErrorStatus.POST_NOT_FOUND));
@@ -99,7 +109,7 @@ public class PostService {
         }
 
         // 해당 게시글의 작성자가 아닐 경우
-        if (post.getUser().getId().equals(req.getUserId())){
+        if (!post.getUser().getId().equals(req.getUserId())){
             throw new PostException(PostErrorStatus.NO_PERMISSION_TO_WRITE);
         }
 
@@ -109,6 +119,7 @@ public class PostService {
         return post.getId();
     }
 
+    @Transactional
     public Long deletePost(Long postId, Long userId){
 
         Post post = postRepository.findById(postId)
@@ -127,8 +138,36 @@ public class PostService {
         return post.getId();
     }
 
+    @Transactional
+    public PostDetailResponse getPostDetail(Long postId){
+
+        // 게시글 조회
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(PostErrorStatus.POST_NOT_FOUND));
+
+        post.incrementViewCount();  //조회수 증가
+
+        // 해당 게시글의 댓글 조회
+        List<CommentResponse> comments = commentRepository.findByPostId(postId).stream()
+                .map(CommentResponse::toDto)
+                .collect(Collectors.toList());
+
+        return PostDetailResponse.toDto(post, comments);
+
+
+    }
+
     // 특정 게시판의 글 페이징하여 조회
-    public Slice<Post> getPostsByBoardId(Long boardId, Pageable pageable) {
-        return postRepository.findByBoardId(boardId, pageable);
+    public Slice<PostResponse> getPostsByBoardId(Long boardId, Pageable pageable) {
+
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new BoardException(BoardErrorStatus.BOARD_NOT_FOUND));
+
+        Slice<Post> posts = postRepository.findByBoardId(boardId, pageable);
+
+        return posts.map(post -> {
+            int commentCount = commentRepository.countByPostId(post.getId());
+            return PostResponse.toDto(post, commentCount);
+        });
     }
 }

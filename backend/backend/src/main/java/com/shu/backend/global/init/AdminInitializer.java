@@ -1,5 +1,10 @@
 package com.shu.backend.global.init;
 
+import com.shu.backend.domain.board.entity.Board;
+import com.shu.backend.domain.board.enums.BoardScope;
+import com.shu.backend.domain.board.repository.BoardRepository;
+import com.shu.backend.domain.region.entity.Region;
+import com.shu.backend.domain.region.repository.RegionRepository;
 import com.shu.backend.domain.school.entity.School;
 import com.shu.backend.domain.school.repository.SchoolRepository;
 import com.shu.backend.domain.user.entity.User;
@@ -12,6 +17,8 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Component;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Component
 @RequiredArgsConstructor
 public class AdminInitializer implements CommandLineRunner {
@@ -22,6 +29,8 @@ public class AdminInitializer implements CommandLineRunner {
     private final UserRepository userRepository;
     private final SchoolRepository schoolRepository;
     private final PasswordEncoder passwordEncoder;
+    private final RegionRepository regionRepository;
+    private final BoardRepository boardRepository;
 
     @Override
     @Transactional
@@ -36,14 +45,30 @@ public class AdminInitializer implements CommandLineRunner {
                                 .build()
                 ));
 
+        Region adminRegion = regionRepository.save(
+                Region.builder()
+                        .name("의정부시")
+                        .build()
+        );
+
         // 운영자 전용 학교 생성 or 조회
         School adminSchool = schoolRepository.findByName(ADMIN_SCHOOL_NAME)
                 .orElseGet(() -> schoolRepository.save(
                         School.builder()
                                 .name(ADMIN_SCHOOL_NAME)
+                                .region(adminRegion)
                                 .logoImageUrl(null)
                                 .build()
                 ));
+
+        boardRepository.saveAll(List.of(
+                Board.builder().title("자유게시판").description("자유롭게 이야기해요").school(adminSchool).scope(BoardScope.SCHOOL).build(),
+                Board.builder().title("1학년 게시판").description("1학년 전용 게시판").school(adminSchool).scope(BoardScope.SCHOOL).build(),
+                Board.builder().title("2학년 게시판").description("2학년 전용 게시판").school(adminSchool).scope(BoardScope.SCHOOL).build(),
+                Board.builder().title("3학년 게시판").description("3학년 전용 게시판").school(adminSchool).scope(BoardScope.SCHOOL).build(),
+                Board.builder().title("졸업생 게시판").description("졸업생 전용 게시판").school(adminSchool).scope(BoardScope.SCHOOL).build(),
+                Board.builder().title("지역 게시판").description("같은 지역 학생들과 이야기해요").region(adminSchool.getRegion()).scope(BoardScope.REGION).build()
+        ));
 
         // ADMIN 계정이 하나도 없으면 기본 관리자 생성
         boolean existsAdmin = userRepository.existsByRole(UserRole.ADMIN);

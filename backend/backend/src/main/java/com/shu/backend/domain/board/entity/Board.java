@@ -43,7 +43,7 @@ public class Board extends BaseEntity {
     private Region region;
 
     @Enumerated(EnumType.STRING)
-    private BoardScope scope = BoardScope.REGION;
+    private BoardScope scope = BoardScope.SCHOOL;
 
 
 }

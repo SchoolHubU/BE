@@ -3,14 +3,14 @@ package com.shu.backend.domain.reaction;
 import com.shu.backend.domain.reaction.enums.ReactionTargetType;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@Builder
+@AllArgsConstructor(access = AccessLevel.PROTECTED)
 @Table(
         name = "reaction",
         uniqueConstraints = {
@@ -35,9 +35,11 @@ public class Reaction extends BaseEntity {
     private Long targetId;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean liked = false;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean disliked = false;
 
 

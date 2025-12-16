@@ -4,12 +4,16 @@ package com.shu.backend.domain.usersetting;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 @Entity
 @Getter
 @NoArgsConstructor
+@Builder
+@AllArgsConstructor
 @Table(
         name = "user_setting",
         uniqueConstraints = {
@@ -27,22 +31,27 @@ public class UserSetting extends BaseEntity {
 
     // 전체 푸시 알람
     @Column(name = "allow_push", nullable = false)
+    @Builder.Default
     private Boolean allowPush = true;
 
     // 댓글 알림
     @Column(name = "allow_comment_notification", nullable = false)
+    @Builder.Default
     private Boolean allowCommentNotification = true;
 
     // 대댓글 알림
     @Column(name = "allow_reply_notification", nullable = false)
+    @Builder.Default
     private Boolean allowReplyNotification = true;
 
     // 좋아요 알ㄹ림
     @Column(name = "allow_like_notification", nullable = false)
+    @Builder.Default
     private Boolean allowLikeNotification = true;
 
     // 실시간 채팅 알림
     @Column(name = "allow_chat_notification", nullable = false)
+    @Builder.Default
     private Boolean allowChatNotification = true;
 
     @OneToOne(fetch = FetchType.LAZY)
