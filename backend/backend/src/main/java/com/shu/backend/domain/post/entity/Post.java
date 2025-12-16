@@ -5,6 +5,8 @@ import com.shu.backend.domain.post.enums.PostStatus;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 
 @Entity
@@ -22,7 +24,7 @@ public class Post extends BaseEntity {
     private String title;
 
     @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @Enumerated(EnumType.STRING)
@@ -48,4 +50,15 @@ public class Post extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+
+    public void update(String title, String content, boolean anonymous) {
+        this.title = title;
+        this.content = content;
+        this.anonymous = anonymous;
+    }
+
+    public void delete(){
+        this.postStatus = PostStatus.DELETED;
+    }
 }

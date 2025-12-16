@@ -1,11 +1,16 @@
 package com.shu.backend.domain.post.service;
 
 import com.shu.backend.domain.board.entity.Board;
+import com.shu.backend.domain.board.enums.BoardScope;
 import com.shu.backend.domain.board.exception.BoardException;
 import com.shu.backend.domain.board.exception.status.BoardErrorStatus;
 import com.shu.backend.domain.board.repository.BoardRepository;
 import com.shu.backend.domain.post.dto.PostCreateRequest;
+import com.shu.backend.domain.post.dto.PostUpdateRequest;
 import com.shu.backend.domain.post.entity.Post;
+import com.shu.backend.domain.post.enums.PostStatus;
+import com.shu.backend.domain.post.exception.PostException;
+import com.shu.backend.domain.post.exception.status.PostErrorStatus;
 import com.shu.backend.domain.post.repository.PostRepository;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.domain.user.exception.UserException;
@@ -27,34 +32,102 @@ public class PostService {
     private final UserRepository userRepository;
 
     @Transactional
-    public Long createPost(PostCreateRequest request){
+    public Long createPost(Long boardId, PostCreateRequest req) {
 
-        Long boardId = request.getBoardId();
-        Long userId = request.getUserId();
-
-        //게시판 검증
         Board board = boardRepository.findById(boardId)
                 .orElseThrow(() -> new BoardException(BoardErrorStatus.BOARD_NOT_FOUND));
 
-        //사용자 검증
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new UserException(UserErrorStatus.USER_NOT_FOUND));
-
-        //게시판 활성화 여부 검증
-        if(!board.isActive()){
+        if (!board.isActive()) {
             throw new BoardException(BoardErrorStatus.BOARD_INACTIVE);
         }
 
+        User user;
 
+        // 현재 board가 지역게시판인 경우
+        if (board.getScope() == BoardScope.REGION) {
 
+            user = userRepository.findByIdWithSchoolAndRegion(req.getUserId())
+                    .orElseThrow(() -> new UserException(UserErrorStatus.USER_NOT_FOUND));
 
+            Long userRegionId = user.getSchool().getRegion().getId();
+            Long boardRegionId = board.getRegion().getId();
 
+            if (!boardRegionId.equals(userRegionId)) {
+                throw new PostException(PostErrorStatus.NO_PERMISSION_TO_WRITE);
+            }
 
+        }
+        // 현재 board가 지역게시판 외의 게시판일 경우
+        else if (board.getScope() == BoardScope.SCHOOL) {
 
-        return null;
+            user = userRepository.findById(req.getUserId())
+                    .orElseThrow(() -> new UserException(UserErrorStatus.USER_NOT_FOUND));
 
+            Long userSchoolId = user.getSchool().getId();
+            Long boardSchoolId = board.getSchool().getId();
+
+            if (!boardSchoolId.equals(userSchoolId)) {
+                throw new PostException(PostErrorStatus.NO_PERMISSION_TO_WRITE);
+            }
+
+        } else {
+            throw new BoardException(BoardErrorStatus.INVALID_BOARD_SCOPE);
+        }
+
+        String title = req.getTitle().trim();
+        String content = req.getContent().trim();
+
+        Post post = Post.builder()
+                .title(title)
+                .content(content)
+                .anonymous(req.isAnonymous())
+                .board(board)
+                .user(user)
+                .build();
+
+        postRepository.save(post);
+        return post.getId();
     }
 
+    public Long updatePost(Long postId, PostUpdateRequest req){
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(PostErrorStatus.POST_NOT_FOUND));
+
+        // 이미 삭제된 게시글일 경우
+        if (post.getPostStatus() == PostStatus.DELETED){
+            throw new PostException(PostErrorStatus.POST_ALREADY_DELETED);
+        }
+
+        // 해당 게시글의 작성자가 아닐 경우
+        if (post.getUser().getId().equals(req.getUserId())){
+            throw new PostException(PostErrorStatus.NO_PERMISSION_TO_WRITE);
+        }
+
+        // 글 수정 수행
+        post.update(req.getTitle(), req.getContent(),req.isAnonymous());
+
+        return post.getId();
+    }
+
+    public Long deletePost(Long postId, Long userId){
+
+        Post post = postRepository.findById(postId)
+                .orElseThrow(() -> new PostException(PostErrorStatus.POST_NOT_FOUND));
+
+        if (post.getPostStatus() == PostStatus.DELETED) {
+            throw new PostException(PostErrorStatus.POST_ALREADY_DELETED);
+        }
+
+        if (!post.getUser().getId().equals(userId)) {
+            throw new PostException(PostErrorStatus.NO_PERMISSION_TO_WRITE);
+        }
+
+        post.delete();
+
+        return post.getId();
+    }
+
+    // 특정 게시판의 글 페이징하여 조회
     public Slice<Post> getPostsByBoardId(Long boardId, Pageable pageable) {
         return postRepository.findByBoardId(boardId, pageable);
     }

@@ -16,7 +16,8 @@ public enum BoardErrorStatus implements BaseErrorCode {
     BOARD_INACTIVE(HttpStatus.FORBIDDEN, "BOARD4001", "비활성화된 게시판입니다."),
     INVALID_BOARD_TITLE(HttpStatus.BAD_REQUEST, "BOARD4002", "잘못된 게시판 제목입니다."),
     SCHOOL_ID_REQUIRED(HttpStatus.BAD_REQUEST, "BOARD4003", "학교 ID가 필요합니다."),
-    REGION_ID_REQUIRED(HttpStatus.BAD_REQUEST, "BOARD4004", "지역 ID가 필요합니다.");
+    REGION_ID_REQUIRED(HttpStatus.BAD_REQUEST, "BOARD4004", "지역 ID가 필요합니다."),
+    INVALID_BOARD_SCOPE(HttpStatus.INTERNAL_SERVER_ERROR, "BOARD5000", "잘못된 게시판 타입입니다.");
 
     private final HttpStatus httpStatus;
     private final String code;

@@ -10,11 +10,10 @@ import lombok.NoArgsConstructor;
 @Getter
 @AllArgsConstructor
 @NoArgsConstructor
-public class PostCreateRequest {
+public class PostUpdateRequest {
 
     @NotNull
     private Long userId;
-
 
     @NotBlank(message = "제목을 입력해주세요.")
     @Size(max = 100, message = "제목은 최대 100자까지 입력 가능합니다.")
@@ -25,5 +24,4 @@ public class PostCreateRequest {
     private String content;
 
     private boolean anonymous;
-
 }

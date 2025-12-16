@@ -13,8 +13,8 @@ import org.springframework.http.HttpStatus;
 public enum PostErrorStatus implements BaseErrorCode {
     //400
     POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST4000", "존재하지 않는 게시글입니다."),
-    INVALID_REGION_NAME(HttpStatus.BAD_REQUEST, "REGION4002", "잘못된 지역명입니다."),
-    REGION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "REGION4003", "이미 존재하는 지역명입니다.");
+    NO_PERMISSION_TO_WRITE(HttpStatus.BAD_REQUEST, "POST4001", "글 작성 권한이 없습니다."),
+    POST_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "POST4002", "이미 삭제된 게시글입니다.");
 
 
 
