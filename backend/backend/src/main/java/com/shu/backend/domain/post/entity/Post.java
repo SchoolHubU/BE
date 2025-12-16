@@ -5,13 +5,15 @@ import com.shu.backend.domain.post.enums.PostStatus;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
-import lombok.AccessLevel;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Size;
+import lombok.*;
 
 @Entity
 @Getter
+@Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class Post extends BaseEntity {
 
     @Id
@@ -22,23 +24,27 @@ public class Post extends BaseEntity {
     private String title;
 
     @Lob
-    @Column(nullable = false)
+    @Column(columnDefinition = "TEXT", nullable = false)
     private String content;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "post_status", nullable = false)
+    @Builder.Default
     private PostStatus postStatus = PostStatus.ACTIVE;
 
     @Column(name = "view_count", nullable = false)
+    @Builder.Default
     private Integer viewCount = 0;
 
     @Column(nullable = false)
     private Boolean anonymous = true;
 
     @Column(name = "like_count", nullable = false)
+    @Builder.Default
     private int likeCount = 0;
 
     @Column(name = "dislike_count", nullable = false)
+    @Builder.Default
     private int dislikeCount = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -48,4 +54,19 @@ public class Post extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
+
+    public void incrementViewCount() {
+        this.viewCount++;
+    }
+
+
+    public void update(String title, String content, boolean anonymous) {
+        this.title = title;
+        this.content = content;
+        this.anonymous = anonymous;
+    }
+
+    public void delete(){
+        this.postStatus = PostStatus.DELETED;
+    }
 }

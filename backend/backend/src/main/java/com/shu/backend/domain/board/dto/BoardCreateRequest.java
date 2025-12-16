@@ -1,5 +1,6 @@
 package com.shu.backend.domain.board.dto;
 
+import com.shu.backend.domain.board.enums.BoardScope;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -16,7 +17,11 @@ public class BoardCreateRequest {
 
     private String description;
 
-    @NotNull
+
+    private BoardScope scope;
+
     private Long schoolId;
+
+    private Long regionId;
 
 }

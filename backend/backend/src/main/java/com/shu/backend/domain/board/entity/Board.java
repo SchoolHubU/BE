@@ -1,5 +1,7 @@
 package com.shu.backend.domain.board.entity;
 
+import com.shu.backend.domain.board.enums.BoardScope;
+import com.shu.backend.domain.region.entity.Region;
 import com.shu.backend.domain.school.entity.School;
 import com.shu.backend.global.common.BaseEntity;
 import jakarta.persistence.*;
@@ -7,10 +9,11 @@ import lombok.*;
 
 @Entity
 @Table(
-        uniqueConstraints = @UniqueConstraint(
-                name = "uq_board_school_title",
-                columnNames = {"school_id", "title"}
-        )
+        name = "board",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uq_board_school_title", columnNames = {"school_id", "title"}),
+                @UniqueConstraint(name = "uq_board_region_title", columnNames = {"region_id", "title"})
+        }
 )
 @Getter
 @Builder
@@ -32,8 +35,15 @@ public class Board extends BaseEntity {
     private boolean active = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "school_id", nullable = false)
+    @JoinColumn(name = "school_id")
     private School school;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "region_id")
+    private Region region;
+
+    @Enumerated(EnumType.STRING)
+    private BoardScope scope = BoardScope.SCHOOL;
 
 
 }
