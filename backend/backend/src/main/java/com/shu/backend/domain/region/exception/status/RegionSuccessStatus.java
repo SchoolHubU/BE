@@ -12,7 +12,8 @@ import org.springframework.http.HttpStatus;
 public enum RegionSuccessStatus implements BaseCode {
 
     //에러 필드 추가
-    _REGION_FOUND(HttpStatus.OK, "REGION2001", "지역 조회 성공");
+    _REGION_FOUND(HttpStatus.OK, "REGION2001", "지역 조회 성공"),
+    REGION_CREATE_SUCCESS(HttpStatus.OK, "REGION2002", "지역 생성 성공");
 
     private final HttpStatus httpStatus;
     private final String code;

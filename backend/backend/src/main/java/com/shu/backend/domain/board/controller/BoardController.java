@@ -1,5 +1,6 @@
 package com.shu.backend.domain.board.controller;
 
+import com.shu.backend.domain.board.entity.Board;
 import com.shu.backend.domain.board.service.BoardService;
 import com.shu.backend.domain.board.dto.BoardCreateRequest;
 import com.shu.backend.domain.board.dto.BoardResponse;
@@ -26,14 +27,12 @@ public class BoardController {
             description = "관리자 권한으로 게시판을 생성할 수 있습니다."
     )
     @PostMapping(value = "/admin/boards", consumes = "application/json", produces = "application/json")
-    public ResponseEntity<ApiResponse<Long>> createBoard(
+    public ApiResponse<Long> createBoard(
             @Valid @RequestBody BoardCreateRequest request) {
 
         Long boardId = boardService.createBoard(request);
 
-        return ResponseEntity
-                .status(BoardSuccessStatus._BOARD_CREATED.getHttpStatus())
-                .body(ApiResponse.of(BoardSuccessStatus._BOARD_CREATED, boardId));
+        return ApiResponse.of(BoardSuccessStatus._BOARD_CREATED, boardId);
 
     }
 
@@ -42,12 +41,10 @@ public class BoardController {
             description = "특정 학교의 게시판 전체 목록을 조회할 수 있습니다."
     )
     @GetMapping(value = "/api/schools/{schoolId}/boards")
-    public ResponseEntity<ApiResponse<List<BoardResponse>>> getBoardsBySchool(@PathVariable Long schoolId){
+    public ApiResponse<List<BoardResponse>> getBoardsBySchool(@PathVariable Long schoolId){
         List<BoardResponse> boards = boardService.getBoardsBySchool(schoolId);
 
-        return ResponseEntity
-                .status(BoardSuccessStatus._BOARD_CREATED.getHttpStatus())
-                .body(ApiResponse.of(BoardSuccessStatus._BOARD_CREATED, boards));
+        return ApiResponse.of(BoardSuccessStatus.BOARD_FOUND_SUCCESS, boards);
     }
 
 

@@ -11,7 +11,8 @@ import org.springframework.http.HttpStatus;
 public enum SchoolSuccessStatus implements BaseCode {
 
     //에러 필드 추가
-    _SCHOOL_FOUND(HttpStatus.OK, "SCHOOL2001", "학교 조회 성공");
+    SCHOOL_FOUND(HttpStatus.OK, "SCHOOL2001", "학교 조회 성공"),
+    SCHOOL_CREATE_SUCCESS(HttpStatus.OK, "SCHOOL2002", "학교 생성 성공");
 
     private final HttpStatus httpStatus;
     private final String code;

@@ -13,7 +13,9 @@ import org.springframework.http.HttpStatus;
 public enum RegionErrorStatus implements BaseErrorCode {
     //400
     REGION_NOT_FOUND(HttpStatus.NOT_FOUND, "REGION4000", "존재하지 않는 지역입니다."),
-    REQUEST_IMAGE_REQUIRED(HttpStatus.NOT_FOUND, "REGION4001", "이미지는 필수입니다.");
+    REQUEST_IMAGE_REQUIRED(HttpStatus.NOT_FOUND, "REGION4001", "이미지는 필수입니다."),
+    INVALID_REGION_NAME(HttpStatus.BAD_REQUEST, "REGION4002", "잘못된 지역명입니다."),
+    REGION_ALREADY_EXISTS(HttpStatus.BAD_REQUEST, "REGION4003", "이미 존재하는 지역명입니다.");
 
 
 
