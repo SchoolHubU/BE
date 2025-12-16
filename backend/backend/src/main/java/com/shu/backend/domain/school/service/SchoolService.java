@@ -28,6 +28,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Service
 @Transactional(readOnly = true)
@@ -70,7 +71,8 @@ public class SchoolService {
                 Board.builder().title("1학년 게시판").description("1학년 전용 게시판").school(school).build(),
                 Board.builder().title("2학년 게시판").description("2학년 전용 게시판").school(school).build(),
                 Board.builder().title("3학년 게시판").description("3학년 전용 게시판").school(school).build(),
-                Board.builder().title("졸업생 게시판").description("졸업생 전용 게시판").school(school).build()
+                Board.builder().title("졸업생 게시판").description("졸업생 전용 게시판").school(school).build(),
+                Board.builder().title("지역 게시판").description("같은 지역 학생들과 이야기해요").region(school.getRegion()).build()
         ));
 
         return school.getId();
@@ -103,7 +105,13 @@ public class SchoolService {
                 .orElseThrow(() -> new BoardException(BoardErrorStatus.BOARD_NOT_FOUND));
 
         // 학교의 게시판 목록 조회 (해당 학교 게시판 상세 조회 버튼)
-        List<Board> boards = boardRepository.findBySchoolId(schoolId);
+        Long regionId = school.getRegion().getId();
+        List<Board> schoolBoards = boardRepository.findBySchoolId(schoolId);
+        List<Board> regionBoards = boardRepository.findByRegionId(regionId);
+
+        List<BoardResponse> boardResponses = Stream.concat(schoolBoards.stream(), regionBoards.stream())
+                .map(BoardResponse::toDto)
+                .toList();
 
         // 자유게시판의 글 Slice 객체로 조회
         Slice<Post> posts = postService.getPostsByBoardId(freeBoard.getId(), pageable);
@@ -113,14 +121,10 @@ public class SchoolService {
                 .map(post -> PostResponse.toDto(post, posts.getNumberOfElements()))
                 .collect(Collectors.toList());
 
-        // 6. 게시판 정보만 따로 모아서 반환할 준비 (BoardResponse) -> 이제 빌더 패턴 사용!
-        List<BoardResponse> boardResponses = boards.stream()
-                .map(board -> BoardResponse.toDto(board))  // 기존의 BoardResponse.toDto() 사용
-                .collect(Collectors.toList());
+
 
         return new SchoolDetailResponse(school.getId(), school.getName(), boardResponses, postResponses, posts.hasNext());
 
-        //TODO: DTO 관계 정리, SchoolController, 페이징 개념 다시 정리 및 Post 구현
 
 
     }
