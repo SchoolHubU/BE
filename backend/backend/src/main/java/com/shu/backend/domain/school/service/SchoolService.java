@@ -5,6 +5,7 @@ import com.shu.backend.domain.board.entity.Board;
 import com.shu.backend.domain.board.exception.BoardException;
 import com.shu.backend.domain.board.exception.status.BoardErrorStatus;
 import com.shu.backend.domain.board.repository.BoardRepository;
+import com.shu.backend.domain.board.service.BoardService;
 import com.shu.backend.domain.post.dto.PostResponse;
 import com.shu.backend.domain.post.entity.Post;
 import com.shu.backend.domain.post.service.PostService;
@@ -37,6 +38,7 @@ public class SchoolService {
     private final SchoolRepository schoolRepository;
     private final BoardRepository boardRepository;
     private final PostService postService;
+    private final BoardService boardService;
 
     /*
     학교 생성
@@ -46,12 +48,31 @@ public class SchoolService {
         Region region = regionRepository.findById(schoolCreateRequest.getRegionId())
                 .orElseThrow(() -> new RegionException(RegionErrorStatus.REGION_NOT_FOUND));
 
+        String name = schoolCreateRequest.getName();
+        if (name == null || name.isEmpty()) {
+            throw new SchoolException(SchoolErrorStatus.INVALID_SCHOOL_NAME);
+        }
+
+        if (schoolRepository.existsByRegionIdAndName(region.getId(), name.trim())){
+            throw new SchoolException(SchoolErrorStatus.SCHOOL_ALREADY_EXISTS);
+        }
+
         School school = School.builder()
                 .name(schoolCreateRequest.getName())
                 .region(region)
                 .build();
 
         schoolRepository.save(school);
+
+        // 학교 생성 + 해당 학교 기본 게시판 5개 생성
+        boardRepository.saveAll(List.of(
+                Board.builder().title("자유게시판").description("자유롭게 이야기해요").school(school).build(),
+                Board.builder().title("1학년 게시판").description("1학년 전용 게시판").school(school).build(),
+                Board.builder().title("2학년 게시판").description("2학년 전용 게시판").school(school).build(),
+                Board.builder().title("3학년 게시판").description("3학년 전용 게시판").school(school).build(),
+                Board.builder().title("졸업생 게시판").description("졸업생 전용 게시판").school(school).build()
+        ));
+
         return school.getId();
     }
 

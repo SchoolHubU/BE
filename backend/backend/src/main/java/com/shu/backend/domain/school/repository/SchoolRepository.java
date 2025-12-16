@@ -21,4 +21,5 @@ public interface SchoolRepository extends JpaRepository<School, Long> {
             "ORDER BY s.name ASC")
     List<School> findSchoolsByRegionAndName(@Param("regionId") Long regionId, @Param("keyword") String keyword);
 
+    boolean existsByRegionIdAndName(Long id, String name);
 }

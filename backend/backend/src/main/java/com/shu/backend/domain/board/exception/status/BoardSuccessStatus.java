@@ -10,10 +10,10 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum BoardSuccessStatus implements BaseCode {
 
-    _BOARD_CREATED(HttpStatus.OK, "BOARD2000", "게시판이 성공적으로 생성되었습니다.")
+    _BOARD_CREATED(HttpStatus.OK, "BOARD2000", "게시판이 성공적으로 생성되었습니다."),
 
 
-    ;
+    BOARD_FOUND_SUCCESS(HttpStatus.OK, "BOARD2001", "게시판 조회 성공");
 
     private final HttpStatus httpStatus;
     private final String code;

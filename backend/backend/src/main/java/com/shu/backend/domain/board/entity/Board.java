@@ -6,6 +6,12 @@ import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
+@Table(
+        uniqueConstraints = @UniqueConstraint(
+                name = "uq_board_school_title",
+                columnNames = {"school_id", "title"}
+        )
+)
 @Getter
 @Builder
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -16,7 +22,7 @@ public class Board extends BaseEntity {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private java.lang.Long id;
 
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String title;
 
     private String description;

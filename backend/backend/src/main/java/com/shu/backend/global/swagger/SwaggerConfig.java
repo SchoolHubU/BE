@@ -47,12 +47,13 @@ public class SwaggerConfig {
     }
 
     @Bean
-    public GroupedOpenApi boardSchoolApi() {
+    public GroupedOpenApi boardSchoolRegionApi() {
         return GroupedOpenApi.builder()
-                .group("Board & School")
+                .group("Board & School & Region")
                 .packagesToScan(
                         DOMAIN_BASE + ".board",
-                        DOMAIN_BASE + ".school"
+                        DOMAIN_BASE + ".school",
+                        DOMAIN_BASE + ".region"
                 )
                 .build();
     }
@@ -100,4 +101,5 @@ public class SwaggerConfig {
                 )
                 .build();
     }
+
 }
