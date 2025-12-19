@@ -108,6 +108,12 @@ public class AuthService {
         // 관리자면 학교 인증 체크 패스
         if (user.getRole() == UserRole.USER) {
 
+            //  이미 인증 완료된 유저면 바로 통과
+            if (user.isVerified()) {
+                String accessToken = jwtTokenProvider.createAccessToken(user.getId());
+                return new LoginResponseDTO(user.getId(), accessToken);
+            }
+
             UserSchoolVerificationRequest latestRequest =
                     verificationRequestRepository.findTopByUserOrderByRequestedAtDesc(user)
                             .orElse(null);

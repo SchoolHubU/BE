@@ -44,7 +44,7 @@ public class UserSetting extends BaseEntity {
     @Builder.Default
     private Boolean allowReplyNotification = true;
 
-    // 좋아요 알ㄹ림
+    // 좋아요 알림
     @Column(name = "allow_like_notification", nullable = false)
     @Builder.Default
     private Boolean allowLikeNotification = true;
