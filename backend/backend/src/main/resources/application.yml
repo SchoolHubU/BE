@@ -56,6 +56,7 @@ websocket:
 file:
   upload-dir:
     student-card: uploads/student-card   # 실제 로컬 폴더 (프로젝트 기준)
+    chat: uploads/chat
   storage:
     bucket: local-bucket                 # 로컬에선 의미 거의 없음
     student-card-dir: student-card
@@ -68,3 +69,10 @@ file:
 #      bucket: shu-student-card                # 실제 S3 버킷명
 #      student-card-dir: student-card          # S3 내부 디렉토리(prefix)
 #      base-url: https://cdn.schoolhubu.com    # CloudFront or S3 정적 URL
+
+
+#file:
+#  chat-dir: chat
+#  student-card-dir: student-card
+#  base-url: https://...
+#  bucket: ...

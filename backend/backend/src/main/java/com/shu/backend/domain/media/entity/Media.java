@@ -1,4 +1,4 @@
-package com.shu.backend.domain.media;
+package com.shu.backend.domain.media.entity;
 
 import com.shu.backend.domain.media.enums.MediaTargetType;
 import com.shu.backend.domain.media.enums.MediaType;
@@ -35,6 +35,17 @@ public class Media extends BaseEntity {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "uploader_id", nullable = false)
     private User uploader;
+
+    public static Media ofChatMessage(String url, Long chatMessageId, MediaType mediaType, User uploader) {
+        Media m = new Media();
+        // 아래는 필드 접근이 private이라면 same class 내부라 가능
+        m.url = url;
+        m.targetType = MediaTargetType.CHAT_MESSAGE;
+        m.targetId = chatMessageId;
+        m.mediaType = mediaType;
+        m.uploader = uploader;
+        return m;
+    }
 
 
 

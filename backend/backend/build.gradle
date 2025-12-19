@@ -65,6 +65,8 @@ dependencies {
 	//AWS S3
 	implementation platform('software.amazon.awssdk:bom:2.25.26')  // 최신 버전
 	implementation 'software.amazon.awssdk:s3'
+
+
 }
 
 tasks.named('test') {

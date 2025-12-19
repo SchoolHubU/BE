@@ -14,4 +14,5 @@ public class FileStorageProperties {
     private String bucket;
     private String studentCardDir;
     private String baseUrl;
+    private String chatDir;
 }

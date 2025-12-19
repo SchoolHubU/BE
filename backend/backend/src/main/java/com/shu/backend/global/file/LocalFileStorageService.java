@@ -1,5 +1,7 @@
 package com.shu.backend.global.file;
 
+import com.shu.backend.domain.chatmessage.exception.ChatMessageException;
+import com.shu.backend.domain.chatmessage.exception.status.ChatMessageErrorStatus;
 import com.shu.backend.domain.user.exception.UserException;
 import com.shu.backend.domain.user.exception.status.UserErrorStatus;
 import lombok.RequiredArgsConstructor;
@@ -19,14 +21,32 @@ import java.util.UUID;
 public class LocalFileStorageService implements FileStorageService {
 
     @Value("${file.upload-dir.student-card}")
-    private String studentCardUploadDir; // uploads/student-card 같은 값
+    private String studentCardUploadDir;
+
+    @Value("${file.upload-dir.chat}")
+    private String chatUploadDir;
 
     @Value("${server.port}")
-    private int serverPort;  // 8080
+    private int serverPort;
 
     @Override
     public String uploadStudentCardImage(MultipartFile file) {
+        return upload(file, studentCardUploadDir, "/uploads/student-card/",
+                () -> new UserException(UserErrorStatus.USER_STUDENT_CARD_UPLOAD_FAIL));
+    }
 
+    @Override
+    public String uploadChatImage(MultipartFile file) {
+        return upload(file, chatUploadDir, "/uploads/chat/",
+                () -> new ChatMessageException(ChatMessageErrorStatus.CHAT_IMAGE_UPLOAD_FAIL));
+    }
+
+    private String upload(
+            MultipartFile file,
+            String uploadDir,
+            String publicPath,
+            java.util.function.Supplier<RuntimeException> onFail
+    ) {
         String originalFilename = file.getOriginalFilename();
         String ext = "";
 
@@ -37,7 +57,7 @@ public class LocalFileStorageService implements FileStorageService {
         String storedFileName = UUID.randomUUID() + ext;
 
         try {
-            Path uploadPath = Paths.get(studentCardUploadDir);
+            Path uploadPath = Paths.get(uploadDir);
             if (!Files.exists(uploadPath)) {
                 Files.createDirectories(uploadPath);
             }
@@ -45,11 +65,10 @@ public class LocalFileStorageService implements FileStorageService {
             Path targetPath = uploadPath.resolve(storedFileName);
             Files.copy(file.getInputStream(), targetPath);
 
-            // 일단은 로컬 접근 URL 간단히
-            return "http://localhost:" + serverPort + "/uploads/student-card/" + storedFileName;
+            return "http://localhost:" + serverPort + publicPath + storedFileName;
 
         } catch (IOException e) {
-            throw new UserException(UserErrorStatus.USER_STUDENT_CARD_UPLOAD_FAIL);
+            throw onFail.get();
         }
     }
 }
