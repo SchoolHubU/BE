@@ -1,5 +1,6 @@
 package com.shu.backend.user.service;
 
+import com.shu.backend.domain.auth.service.SmsVerificationService;
 import com.shu.backend.domain.school.entity.School;
 import com.shu.backend.domain.school.repository.SchoolRepository;
 import com.shu.backend.domain.school.exception.SchoolException;
@@ -8,6 +9,8 @@ import com.shu.backend.domain.user.dto.SignUpResponseDTO;
 import com.shu.backend.domain.user.dto.UserLoginDTO;
 import com.shu.backend.domain.user.dto.UserRequestDTO;
 import com.shu.backend.domain.user.entity.User;
+import com.shu.backend.domain.user.enums.Gender;
+import com.shu.backend.domain.user.enums.Grade;
 import com.shu.backend.domain.user.enums.UserRole;
 import com.shu.backend.domain.user.exception.UserException;
 import com.shu.backend.domain.user.repository.UserRepository;
@@ -30,6 +33,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
+import static org.mockito.BDDMockito.willDoNothing;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -50,12 +54,17 @@ public class AuthServiceTest {
     @Mock
     private JwtTokenProvider jwtTokenProvider;
 
+    @Mock
+    private SmsVerificationService smsVerificationService;
+
     @InjectMocks
     private AuthService authService;
 
+    String verificationToken = "verif_550e8400-e29b-41d4-a716-446655440000";
+
     @Test
     @DisplayName("회원가입 성공시 유저, 인증요청, 토큰이 제대로 생성된다")
-    void join_success() {
+    void join_success() throws Exception {
         // given
         String email = "test@example.com";
         String nickname = "tester";
@@ -64,18 +73,30 @@ public class AuthServiceTest {
         String encodedPassword = "encoded_pw";
         String requestImageUrl = "https://image.com/student-card.png";
 
+        String phoneNumber = "01012345678";
+        String verificationToken = "verification-token";
+
         UserRequestDTO.SignUp request = UserRequestDTO.SignUp.builder()
                 .username("홍길동")
                 .email(email)
                 .nickname(nickname)
                 .school(schoolName)
                 .password(rawPassword)
+                .classRoom(3)
+                .gender(Gender.MALE)
+                .grade(Grade.FIRST)
+                .phoneNumber(phoneNumber)
+                .verificationToken(verificationToken)
                 .build();
 
         School school = School.builder()
                 .id(1L)
                 .name(schoolName)
                 .build();
+
+        //  휴대폰 인증 통과 스텁
+        willDoNothing().given(smsVerificationService)
+                .verifyTokenOrThrow(verificationToken, phoneNumber);
 
         // 이메일, 닉네임 중복 없음
         given(userRepository.existsByEmail(email)).willReturn(false);
@@ -91,7 +112,6 @@ public class AuthServiceTest {
         given(userRepository.save(any(User.class)))
                 .willAnswer(invocation -> {
                     User u = invocation.getArgument(0);
-                    // id 자동 세팅된 것처럼 흉내
                     java.lang.reflect.Field idField = User.class.getDeclaredField("id");
                     idField.setAccessible(true);
                     idField.set(u, 100L);
@@ -108,12 +128,15 @@ public class AuthServiceTest {
         SignUpResponseDTO response = authService.join(request, requestImageUrl);
 
         // then
-        //응답 검증
+        // 휴대폰 인증이 실제로 호출됐는지 검증 (추가된 핵심)
+        verify(smsVerificationService).verifyTokenOrThrow(verificationToken, phoneNumber);
+
+        // 응답 검증
         assertThat(response).isNotNull();
         assertThat(response.getUserId()).isEqualTo(100L);
         assertThat(response.getAccessToken()).isEqualTo("fake-jwt-token");
 
-        //유저 저장시 비밀번호와 프로필 이미지가 제대로 설정됐는지
+        // 유저 저장시 비밀번호와 프로필 이미지가 제대로 설정됐는지
         ArgumentCaptor<User> userCaptor = ArgumentCaptor.forClass(User.class);
         verify(userRepository).save(userCaptor.capture());
         User savedUser = userCaptor.getValue();
@@ -123,17 +146,16 @@ public class AuthServiceTest {
         assertThat(savedUser.getSchool()).isEqualTo(school);
         assertThat(savedUser.getPassword()).isEqualTo(encodedPassword);
         assertThat(savedUser.getRole()).isEqualTo(UserRole.USER);
-        assertThat(savedUser.getProfileImageUrl()).isEqualTo(requestImageUrl);
+        assertThat(savedUser.getProfileImageUrl()).isEqualTo("default_profile.png");
         assertThat(savedUser.isVerified()).isFalse();
 
-        //학교 인증 요청이 제대로 생성되었는지
+        // 학교 인증 요청이 제대로 생성되었는지
         verify(verificationRequestRepository).save(verificationCaptor.capture());
         UserSchoolVerificationRequest savedRequest = verificationCaptor.getValue();
 
         assertThat(savedRequest.getUser()).isEqualTo(savedUser);
         assertThat(savedRequest.getSchool()).isEqualTo(school);
         assertThat(savedRequest.getRequestImageUrl()).isEqualTo(requestImageUrl);
-        // 상태, requestedAt 기본값은 엔티티에서 세팅되므로 널이 아닌지만 체크해도 됨
         assertThat(savedRequest.getStatus()).isNotNull();
         assertThat(savedRequest.getRequestedAt()).isNotNull();
     }

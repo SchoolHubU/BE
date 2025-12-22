@@ -1,5 +1,7 @@
 package com.shu.backend.domain.user.dto;
 
+import com.shu.backend.domain.user.enums.Gender;
+import com.shu.backend.domain.user.enums.Grade;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -56,6 +58,32 @@ public class UserRequestDTO {
         )
         @Schema(description = "프로필 이미지 URL (선택)", example = "https://cdn.teenple.com/profile/default.png")
         private String profileImageUrl;
+
+        // 성별/학년
+        @NotNull(message = "성별은 필수입니다.")
+        @Schema(description = "성별", example = "MALE", allowableValues = {"MALE", "FEMALE"})
+        private Gender gender;
+
+        @NotNull(message = "학년은 필수입니다.")
+        @Schema(description = "학년", example = "FIRST", allowableValues = {"FIRST", "SECOND", "THIRD", "GRADUATED"})
+        private Grade grade;
+
+        @NotNull(message = "반은 필수입니다.")
+        @Min(value = 1, message = "반은 1 이상이어야 합니다.")
+        @Max(value = 20, message = "반은 20 이하여야 합니다.") // 학교마다 다르면 50 등으로 조정
+        @Schema(description = "반", example = "3")
+        private Integer classRoom;
+
+        // 휴대폰 번호 (01012345678)
+        @NotBlank(message = "휴대폰 번호는 필수입니다.")
+        @Pattern(regexp = "^010\\d{8}$", message = "휴대폰 번호는 010으로 시작하는 11자리 숫자여야 합니다.")
+        @Schema(description = "휴대폰 번호(하이픈 제거)", example = "01012345678")
+        private String phoneNumber;
+
+        //본인인증 완료 증거 토큰 (NICE든 SMS든 동일)
+        @NotBlank(message = "본인인증 토큰이 필요합니다.")
+        @Schema(description = "본인인증 완료 토큰", example = "verif_abc123...")
+        private String verificationToken;
     }
 
     @Getter

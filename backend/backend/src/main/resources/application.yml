@@ -28,6 +28,10 @@ spring:
   jackson:
     serialization:
       fail-on-empty-beans: false
+  data:
+    redis:
+      host: localhost
+      port: 6379
 
 logging:
   level:
@@ -76,3 +80,12 @@ file:
 #  student-card-dir: student-card
 #  base-url: https://...
 #  bucket: ...
+
+
+# 배포 추후 RealSmsProvider로 교체
+#sms:
+#  sens:
+#    access-key: ${NCP_ACCESS_KEY}
+#    secret-key: ${NCP_SECRET_KEY}
+#    service-id: ${NCP_SENS_SERVICE_ID}
+#    from: ${SMS_FROM}
