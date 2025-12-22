@@ -24,6 +24,7 @@ public class Comment extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private CommentStatus commentStatus = CommentStatus.ACTIVE;
 
     @Column(name = "like_count", nullable = false)
@@ -35,6 +36,7 @@ public class Comment extends BaseEntity {
     private Integer dislikeCount = 0;
 
     @Column(nullable = false)
+    @Builder.Default
     private Boolean anonymous = true;
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -47,13 +49,22 @@ public class Comment extends BaseEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "parent_id")
-    private Comment parent;
+    @Builder.Default
+    private Comment parent = null;
 
     @Column(nullable = false)
     @Builder.Default
     private int depth = 0;
 
     //private Integer reportCount = 0;
+
+    public void updateContent(String content) {
+        this.content = content;
+    }
+
+    public void softDelete() {
+        this.commentStatus = CommentStatus.DELETED;
+    }
 
 
 
