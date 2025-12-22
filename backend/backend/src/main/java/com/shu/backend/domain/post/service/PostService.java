@@ -7,6 +7,7 @@ import com.shu.backend.domain.board.exception.status.BoardErrorStatus;
 import com.shu.backend.domain.board.repository.BoardRepository;
 import com.shu.backend.domain.comment.dto.CommentResponse;
 import com.shu.backend.domain.comment.repository.CommentRepository;
+import com.shu.backend.domain.comment.service.CommentQueryService;
 import com.shu.backend.domain.post.dto.PostCreateRequest;
 import com.shu.backend.domain.post.dto.PostDetailResponse;
 import com.shu.backend.domain.post.dto.PostResponse;
@@ -38,6 +39,7 @@ public class PostService {
     private final BoardRepository boardRepository;
     private final UserRepository userRepository;
     private final CommentRepository commentRepository;
+    private final CommentQueryService commentQueryService;
 
     @Transactional
     public Long createPost(Long boardId, PostCreateRequest req) {
@@ -139,22 +141,17 @@ public class PostService {
     }
 
     @Transactional
-    public PostDetailResponse getPostDetail(Long postId){
+    public PostDetailResponse getPostDetail(Long postId) {
 
-        // 게시글 조회
         Post post = postRepository.findById(postId)
                 .orElseThrow(() -> new PostException(PostErrorStatus.POST_NOT_FOUND));
 
-        post.incrementViewCount();  //조회수 증가
+        // 조회수는 원자 업데이트 권장 (아래 4번 참고)
+        postRepository.incrementViewCount(postId);
 
-        // 해당 게시글의 댓글 조회
-        List<CommentResponse> comments = commentRepository.findByPostId(postId).stream()
-                .map(CommentResponse::toDto)
-                .collect(Collectors.toList());
+        List<CommentResponse> comments = commentQueryService.getCommentsForPostDetail(postId);
 
         return PostDetailResponse.toDto(post, comments);
-
-
     }
 
     // 특정 게시판의 글 페이징하여 조회

@@ -19,15 +19,35 @@ public class CommentResponse {
 
     // Comment 엔티티를 CommentResponse로 변환
     public static CommentResponse toDto(Comment comment) {
+
+        String content;
+        String author;
+
+        //댓글 상태 처리
+        switch (comment.getCommentStatus()) {
+            case DELETED -> content = "삭제된 댓글입니다.";
+            case HIDDEN -> content = "블라인드 처리된 댓글입니다.";
+            default -> content = comment.getContent();
+        }
+
+        //익명 여부에 따른 author 반환
+        if (comment.getAnonymous()) {
+            author = "익명";
+        } else if (comment.getUser() != null) {
+            author = comment.getUser().getNickname();
+        } else {
+            author = "알 수 없음";
+        }
+
         return CommentResponse.builder()
                 .commentId(comment.getId())
-                .content(comment.getContent())
-                .author(comment.getUser().getNickname())
+                .content(content)
+                .author(author)
                 .likeCount(comment.getLikeCount())
                 .dislikeCount(comment.getDislikeCount())
                 .anonymous(comment.getAnonymous())
                 .depth(comment.getDepth())
-                .parentId(comment.getParent() != null ? comment.getParent().getId() : null) // 대댓글일 경우 부모 댓글 ID
+                .parentId(comment.getParent() != null ? comment.getParent().getId() : null)
                 .build();
     }
 }
