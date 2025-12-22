@@ -61,7 +61,7 @@ public class SwaggerConfig {
     @Bean
     public GroupedOpenApi postApi() {
         return GroupedOpenApi.builder()
-                .group("Post & Comment")
+                .group("Post & Comment & Reaction & Media")
                 .packagesToScan(
                         DOMAIN_BASE + ".post",
                         DOMAIN_BASE + ".comment",

@@ -3,6 +3,7 @@ package com.shu.backend.domain.comment.repository;
 import com.shu.backend.domain.comment.entity.Comment;
 import com.shu.backend.domain.comment.enums.CommentStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
@@ -44,5 +45,13 @@ public interface CommentRepository extends JpaRepository<Comment, Long> {
     order by c.createdAt asc
 """)
     List<Comment> findReplies(Long parentId, List<CommentStatus> statuses);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Comment c set c.likeCount = c.likeCount + :delta where c.id = :commentId")
+    int updateLikeCount(@Param("commentId") Long commentId, @Param("delta") int delta);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Comment c set c.dislikeCount = c.dislikeCount + :delta where c.id = :commentId")
+    int updateDislikeCount(@Param("commentId") Long commentId, @Param("delta") int delta);
 
 }
