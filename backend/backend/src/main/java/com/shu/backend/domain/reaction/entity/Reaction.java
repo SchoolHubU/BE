@@ -1,4 +1,4 @@
-package com.shu.backend.domain.reaction;
+package com.shu.backend.domain.reaction.entity;
 
 import com.shu.backend.domain.reaction.enums.ReactionTargetType;
 import com.shu.backend.global.common.BaseEntity;
@@ -42,44 +42,34 @@ public class Reaction extends BaseEntity {
     @Builder.Default
     private Boolean disliked = false;
 
-
     // fk로 x
     @Column(name = "user_id", nullable = false)
     private Long userId;
 
 
     // ====== 생성 메서드 ======
-    public static Reaction create(
-            ReactionTargetType targetType,
-            Long targetId,
-            Long userId,
-            boolean liked,
-            boolean disliked
-    ) {
-        Reaction r = new Reaction();
-        r.targetType = targetType;
-        r.targetId = targetId;
-        r.userId = userId;
-        r.liked = liked;
-        r.disliked = disliked;
-        return r;
+    public static Reaction create(ReactionTargetType targetType, Long targetId, Long userId) {
+        return Reaction.builder()
+                .targetType(targetType)
+                .targetId(targetId)
+                .userId(userId)
+                .liked(false)
+                .disliked(false)
+                .build();
     }
 
-    // ====== 기능 메서드 ======
 
-    public void updateLike(boolean liked) {
-        this.liked = liked;
-        if (liked) this.disliked = false; // 좋아요 누르면 싫어요는 자동 해제
+    public boolean applyLike() {
+        if (this.liked) return false;
+        this.liked = true;
+        return true;
     }
 
-    public void updateDislike(boolean disliked) {
-        this.disliked = disliked;
-        if (disliked) this.liked = false; // 싫어요 누르면 좋아요는 자동 해제
+    public boolean applyDislike() {
+        if (this.disliked) return false;
+        this.disliked = true;
+        return true;
     }
 
-    public void clear() {
-        this.liked = false;
-        this.disliked = false;
-    }
 
 }

@@ -16,4 +16,12 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     @Modifying(clearAutomatically = true, flushAutomatically = true)
     @Query("update Post p set p.viewCount = p.viewCount + 1 where p.id = :postId")
     int incrementViewCount(@Param("postId") Long postId);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Post p set p.likeCount = p.likeCount + :delta where p.id = :postId")
+    int updateLikeCount(@Param("postId") Long postId, @Param("delta") int delta);
+
+    @Modifying(clearAutomatically = true, flushAutomatically = true)
+    @Query("update Post p set p.dislikeCount = p.dislikeCount + :delta where p.id = :postId")
+    int updateDislikeCount(@Param("postId") Long postId, @Param("delta") int delta);
 }

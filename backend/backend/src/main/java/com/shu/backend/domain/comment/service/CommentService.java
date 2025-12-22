@@ -79,11 +79,6 @@ public class CommentService {
                 .orElseThrow(() -> new CommentException(CommentErrorStatus.COMMENT_NOT_FOUND));
 
         if (comment.getUser() == null || comment.getUser().getId() == null || !comment.getUser().getId().equals(userId)) {
-            System.out.println(
-                    "commentId=" + commentId +
-                            ", requestUserId=" + userId +
-                            ", storedUserId=" + (comment.getUser() == null ? null : comment.getUser().getId())
-            );
             throw new CommentException(CommentErrorStatus.COMMENT_FORBIDDEN);
         }
 
