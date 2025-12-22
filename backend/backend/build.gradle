@@ -66,6 +66,9 @@ dependencies {
 	implementation platform('software.amazon.awssdk:bom:2.25.26')  // 최신 버전
 	implementation 'software.amazon.awssdk:s3'
 
+	//redis
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 
 }
 

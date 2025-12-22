@@ -11,23 +11,26 @@ import org.springframework.http.HttpStatus;
 @AllArgsConstructor
 public enum UserErrorStatus implements BaseErrorCode {
 
-    //400
+    // =================== 400 / 401 ===================
     USER_NOT_FOUND(HttpStatus.NOT_FOUND, "USER4000", "존재하지 않는 사용자입니다."),
     EXIST_EMAIL(HttpStatus.NOT_FOUND, "USER4001", "이미 존재하는 이메일입니다."),
     EXIST_NICKNAME(HttpStatus.NOT_FOUND, "USER4002", "이미 존재하는 닉네임입니다."),
     EMAIL_NOT_FOUND(HttpStatus.NOT_FOUND, "USER4003", "이미 존재하는 이메일입니다."),
     INVALID_PASSWORD(HttpStatus.UNAUTHORIZED, "USER4004", "비밀번호가 일치하지 않습니다."),
-    SCHOOL_VERIFICATION_ALREADY_APPROVED(HttpStatus.BAD_REQUEST,"USER4005" ,"이미 학교 인증이 완료된 사용자입니다."),
+    SCHOOL_VERIFICATION_ALREADY_APPROVED(HttpStatus.BAD_REQUEST, "USER4005", "이미 학교 인증이 완료된 사용자입니다."),
 
-    //403
+    PHONE_VERIFICATION_CODE_INVALID(HttpStatus.BAD_REQUEST, "USER4010", "인증번호가 올바르지 않습니다."),
+    PHONE_VERIFICATION_TOKEN_INVALID_OR_EXPIRED(HttpStatus.BAD_REQUEST, "USER4011", "인증 토큰이 만료되었거나 유효하지 않습니다."),
+    PHONE_VERIFICATION_PHONE_MISMATCH(HttpStatus.BAD_REQUEST, "USER4012", "휴대폰 번호가 일치하지 않습니다."),
+
+    // =================== 403 ===================
     SCHOOL_VERIFICATION_REQUIRED(HttpStatus.FORBIDDEN, "USER4031", "학교 인증이 필요합니다. 학생증을 업로드해주세요."),
     SCHOOL_VERIFICATION_PENDING(HttpStatus.FORBIDDEN, "USER4032", "학교 인증 심사 중입니다. 인증 완료 후 로그인 가능합니다."),
     SCHOOL_VERIFICATION_REJECTED(HttpStatus.FORBIDDEN, "USER4033", "학교 인증이 거절되었습니다."),
 
-    //500
+    // =================== 500 ===================
     USER_STUDENT_CARD_UPLOAD_FAIL(HttpStatus.INTERNAL_SERVER_ERROR, "USER5000", "학생증 이미지 업로드에 실패했습니다."),
     SCHOOL_VERIFICATION_STATUS_INVALID(HttpStatus.INTERNAL_SERVER_ERROR, "USER5001", "잘못된 인증 상태입니다. 관리자에게 문의해주세요.");
-
     private final HttpStatus httpStatus;
     private final String code;
     private final String message;

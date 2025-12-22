@@ -102,4 +102,15 @@ public class SwaggerConfig {
                 .build();
     }
 
+    @Bean
+    public GroupedOpenApi authApi() {
+        return GroupedOpenApi.builder()
+                .group("Auth")
+                .packagesToScan(
+                        DOMAIN_BASE + ".auth",   //  SMS 인증, 로그인, 회원가입
+                        DOMAIN_BASE + ".user"    // AuthController가 user 패키지에 있다면
+                )
+                .build();
+    }
+
 }

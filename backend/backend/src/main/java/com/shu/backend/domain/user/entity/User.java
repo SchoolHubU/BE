@@ -1,6 +1,8 @@
 package com.shu.backend.domain.user.entity;
 
 import com.shu.backend.domain.school.entity.School;
+import com.shu.backend.domain.user.enums.Gender;
+import com.shu.backend.domain.user.enums.Grade;
 import com.shu.backend.domain.user.enums.UserRole;
 import com.shu.backend.domain.user.enums.UserStatus;
 import com.shu.backend.global.common.BaseEntity;
@@ -57,9 +59,30 @@ public class User extends BaseEntity {
     @Column(name="verified",nullable = false)
     private boolean verified;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Gender gender;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private Grade grade;
+
+    @Column(name = "class_room", nullable = false)
+    private Integer classRoom;
+
+    @Column(nullable = false, length = 20)
+    private String phoneNumber;
+
+    @Column(name = "phone_verified", nullable = false)
+    private boolean phoneVerified = false;
+
     // 학교 인증 완료 처리
     public void verifySchool() {
         this.verified = true;
+    }
+
+    public void markPhoneVerified() {
+        this.phoneVerified = true;
     }
 
 

@@ -1,5 +1,6 @@
 package com.shu.backend.domain.user.service;
 
+import com.shu.backend.domain.auth.service.SmsVerificationService;
 import com.shu.backend.domain.school.entity.School;
 import com.shu.backend.domain.school.repository.SchoolRepository;
 import com.shu.backend.domain.school.exception.SchoolException;
@@ -32,27 +33,37 @@ public class AuthService {
     private final UserSchoolVerificationRequestRepository verificationRequestRepository;
     private final PasswordEncoder passwordEncoder;
     private final JwtTokenProvider jwtTokenProvider;
+    private final SmsVerificationService  smsVerificationService;
 
     private static final String ADMIN_SCHOOL_NAME = "운영자전용학교";
 
-    //회원가입
-    public SignUpResponseDTO join(UserRequestDTO.SignUp request, String requestImageUrl) {
+    // 회원가입
+    public SignUpResponseDTO join(UserRequestDTO.SignUp request, String studentIdImageUrl) {
 
+        // 이메일 / 닉네임 중복 검사
         validateSignUpRequest(request);
 
+        //휴대폰 인증을 거쳤는지
+        smsVerificationService.verifyTokenOrThrow(
+                request.getVerificationToken(),
+                request.getPhoneNumber()
+        );
+
+        //학교 조회
         School school = getSchoolByName(request.getSchool());
 
-        User newUser = createUser(request, school,requestImageUrl);
+        //유저 생성 (본인인증 완료 상태이므로 phoneVerified=true)
+        User newUser = createUser(request, school, true);
         userRepository.save(newUser);
 
-        createVerificationRequest(newUser, school, requestImageUrl);
+        // 학교 인증 요청 생성 (학생증 업로드)
+        createVerificationRequest(newUser, school, studentIdImageUrl);
 
-        // 토큰 발급
+        // JWT 발급
         String accessToken = jwtTokenProvider.createAccessToken(newUser.getId());
 
         return new SignUpResponseDTO(newUser.getId(), accessToken);
     }
-
     //중복 검사
     public void validateSignUpRequest(UserRequestDTO.SignUp request) {
         if (userRepository.existsByEmail(request.getEmail())) {
@@ -73,7 +84,7 @@ public class AuthService {
     }
 
     //유저 생성
-    public User createUser(UserRequestDTO.SignUp request, School school,String requestImageUrl) {
+    public User createUser(UserRequestDTO.SignUp request, School school, boolean phoneVerified) {
         return User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
@@ -83,7 +94,14 @@ public class AuthService {
                 .role(UserRole.USER)
                 .status(UserStatus.ACTIVE)
                 .verified(false)
-                .profileImageUrl(requestImageUrl)
+                .gender(request.getGender())
+                .grade(request.getGrade())
+                .classRoom(request.getClassRoom())
+                .phoneNumber(request.getPhoneNumber())
+                .profileImageUrl(
+                        request.getProfileImageUrl() != null ? request.getProfileImageUrl() : "default_profile.png"
+                )
+                .phoneVerified(phoneVerified)
                 .build();
     }
 

@@ -8,6 +8,8 @@ import com.shu.backend.domain.region.repository.RegionRepository;
 import com.shu.backend.domain.school.entity.School;
 import com.shu.backend.domain.school.repository.SchoolRepository;
 import com.shu.backend.domain.user.entity.User;
+import com.shu.backend.domain.user.enums.Gender;
+import com.shu.backend.domain.user.enums.Grade;
 import com.shu.backend.domain.user.enums.UserRole;
 import com.shu.backend.domain.user.enums.UserStatus;
 import com.shu.backend.domain.user.repository.UserRepository;
@@ -84,6 +86,10 @@ public class AdminInitializer implements CommandLineRunner {
                     .status(UserStatus.ACTIVE)
                     .verified(true)
                     .profileImageUrl(null)
+                    .classRoom(3)
+                    .grade(Grade.FIRST)
+                    .phoneNumber("01053468130")
+                    .gender(Gender.MALE)
                     .build();
 
             userRepository.save(admin);
@@ -128,6 +134,11 @@ public class AdminInitializer implements CommandLineRunner {
                 .status(UserStatus.ACTIVE)
                 .verified(true)          // 바로 채팅 테스트하려면 true가 편함
                 .profileImageUrl(null)   // null이면 기본값/프론트 처리 확인
+                .classRoom(3)
+                .grade(Grade.FIRST)
+                .phoneNumber("01053468130")
+                .gender(Gender.MALE)
+                .phoneVerified(true)
                 .build();
 
         userRepository.save(user);
