@@ -1,4 +1,4 @@
-package com.shu.backend.domain.notification;
+package com.shu.backend.domain.notification.entity;
 
 import com.shu.backend.domain.notification.enums.NotificationTargetType;
 import com.shu.backend.domain.notification.enums.NotificationType;
@@ -37,7 +37,7 @@ public class Notification extends BaseEntity {
     private String message;
 
     @Column(name = "is_read", nullable = false)
-    private Boolean isRead;
+    private Boolean isRead = false;
 
     // 알림을 받는 유저
     @Column(name = "user_id", nullable = false)
@@ -63,12 +63,12 @@ public class Notification extends BaseEntity {
         n.message = message;
         n.userId = userId;
         n.actorId = actorId;
+        n.isRead = false;
         return n;
     }
 
     public void markAsRead() {
         this.isRead = true;
     }
-
 
 }

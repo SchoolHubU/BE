@@ -92,7 +92,24 @@ public class AdminInitializer implements CommandLineRunner {
                     .gender(Gender.MALE)
                     .build();
 
+            User admin2 = User.builder()
+                    .username("카이사")
+                    .email("teenple@example.com")
+                    .nickname("카이사")
+                    .password(passwordEncoder.encode("Abcd1234!"))
+                    .school(adminSchool)
+                    .role(UserRole.ADMIN)
+                    .status(UserStatus.ACTIVE)
+                    .verified(true)
+                    .profileImageUrl(null)
+                    .classRoom(3)
+                    .grade(Grade.FIRST)
+                    .phoneNumber("01071651075")
+                    .gender(Gender.MALE)
+                    .build();
+
             userRepository.save(admin);
+            userRepository.save(admin2);
         }
 
         // =========================

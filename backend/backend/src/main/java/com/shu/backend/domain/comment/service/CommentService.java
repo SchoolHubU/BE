@@ -7,10 +7,14 @@ import com.shu.backend.domain.comment.enums.CommentStatus;
 import com.shu.backend.domain.comment.exception.CommentException;
 import com.shu.backend.domain.comment.exception.status.CommentErrorStatus;
 import com.shu.backend.domain.comment.repository.CommentRepository;
+import com.shu.backend.domain.notification.enums.NotificationTargetType;
+import com.shu.backend.domain.notification.enums.NotificationType;
+import com.shu.backend.domain.notification.service.NotificationService;
 import com.shu.backend.domain.post.entity.Post;
 import com.shu.backend.domain.post.exception.PostException;
 import com.shu.backend.domain.post.exception.status.PostErrorStatus;
 import com.shu.backend.domain.post.repository.PostRepository;
+import com.shu.backend.domain.push.service.PushService;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.domain.user.exception.UserException;
 import com.shu.backend.domain.user.exception.status.UserErrorStatus;
@@ -18,6 +22,8 @@ import com.shu.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Map;
 
 @Service
 @Transactional(readOnly = true)
@@ -27,6 +33,9 @@ public class CommentService {
     private final CommentRepository commentRepository;
     private final UserRepository userRepository;
     private final PostRepository postRepository;
+
+    private final NotificationService notificationService;
+    private final PushService pushService;
 
     @Transactional
     public Long createComment(Long userId, Long postId, CommentCreateRequest req){
@@ -66,6 +75,95 @@ public class CommentService {
                 .build();
 
         Comment saved = commentRepository.save(comment);
+
+        // ===== 알림 생성(저장 성공 이후) =====
+        // actorId = userId(댓글 작성자)
+        Long actorId = userId;
+
+        if (parent == null) {
+            // 1) 일반 댓글: 게시글 작성자에게 알림
+            // receiver = post 작성자
+            Long receiverUserId = post.getUser().getId();
+
+            if(receiverUserId.equals(actorId)){
+                return saved.getId();
+            }
+
+            Long notificationId = notificationService.create(
+                    NotificationType.COMMENT,
+                    NotificationTargetType.POST,
+                    post.getId(),
+                    "내 글에 댓글이 달렸습니다.",
+                    receiverUserId,
+                    actorId
+            );
+
+            //푸시 발송 (푸시 실패해도 댓글 생성은 성공해야 하므로 try-catch 권장)
+            if (notificationId != null) {
+                try {
+                    pushService.sendToUser(
+                            receiverUserId,
+                            "새 댓글",
+                            "내 글에 댓글이 달렸습니다.",
+                            Map.of(
+                                    "notificationId", String.valueOf(notificationId),
+                                    "type", NotificationType.COMMENT.name(),
+                                    "targetType", NotificationTargetType.POST.name(),
+                                    "targetId", String.valueOf(post.getId())
+                            )
+                    );
+                } catch (Exception ignore) {
+                    // 로깅만 하거나 모니터링 전송 권장
+                }
+            }
+
+        } else {
+            // 2) 대댓글: 부모 댓글 작성자에게 알림
+            Long receiverUserId = parent.getUser().getId();
+
+            if(receiverUserId.equals(actorId)){
+                return saved.getId();
+            }
+
+            Long notificationId = notificationService.create(
+                    NotificationType.REPLY,
+                    NotificationTargetType.COMMENT,
+                    parent.getId(),
+                    "내 댓글에 대댓글이 달렸습니다.",
+                    receiverUserId,
+                    actorId
+            );
+
+            // 2) 푸시 발송
+            if (notificationId != null) {
+                try {
+                    pushService.sendToUser(
+                            receiverUserId,
+                            "새 답글",
+                            "내 댓글에 대댓글이 달렸습니다.",
+                            Map.of(
+                                    "notificationId", String.valueOf(notificationId),
+                                    "type", NotificationType.REPLY.name(),
+                                    "targetType", NotificationTargetType.COMMENT.name(),
+                                    "targetId", String.valueOf(parent.getId())
+                            )
+                    );
+                } catch (Exception ignore) {
+                    // 로깅만 하거나 모니터링 전송 권장
+                }
+            }
+
+        /*
+        notificationService.create(
+                NotificationType.NEW_COMMENT_ON_POST,
+                NotificationTargetType.POST,
+                post.getId(),
+                "내 글에 대댓글이 달렸습니다.",
+                post.getUser().getId(),
+                actorId
+        );
+        */
+        }
 
         return saved.getId();
     }

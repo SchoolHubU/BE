@@ -12,6 +12,10 @@ import com.shu.backend.domain.chatroomuser.repository.ChatRoomUserRepository;
 import com.shu.backend.domain.media.entity.Media;
 import com.shu.backend.domain.media.enums.MediaType;
 import com.shu.backend.domain.media.repository.MediaRepository;
+import com.shu.backend.domain.notification.enums.NotificationTargetType;
+import com.shu.backend.domain.notification.enums.NotificationType;
+import com.shu.backend.domain.notification.service.NotificationService;
+import com.shu.backend.domain.push.service.PushService;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +24,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @RequiredArgsConstructor
@@ -32,6 +37,9 @@ public class ChatMessageService {
 
     private final UserRepository userRepository;
     private final MediaRepository mediaRepository;
+
+    private final NotificationService notificationService;
+    private final PushService pushService;
 
     public ChatMessageDTO.MessageResponse send(Long senderId, ChatMessageDTO.SendRequest req) {
 
@@ -98,6 +106,39 @@ public class ChatMessageService {
 
         // 채팅방 요약 필드 갱신 (방 목록 최신순 정렬/미리보기용)
         room.updateLastMessage(saved.getId(), saved.getCreatedAt());
+
+        String notiMsg = (type == ChatMessage.MessageType.TEXT)
+                ? "새 메시지: " + summarize(req.getContent(), 20)
+                : "사진을 보냈습니다.";
+
+
+        //새로운 채팅 알림 생성
+        Long notificationId = notificationService.create(
+                NotificationType.CHAT,
+                NotificationTargetType.CHAT_MSG,
+                room.getId(),
+                notiMsg,
+                receiverId,
+                senderId
+        );
+
+        //푸시 알림 전송
+        if (notificationId != null) {
+            try {
+                pushService.sendToUser(
+                        receiverId,
+                        "새 채팅",
+                        notiMsg,
+                        Map.of(
+                                "notificationId", String.valueOf(notificationId),
+                                "type", NotificationType.CHAT.name(),
+                                "targetType", NotificationTargetType.CHAT_MSG.name(),
+                                "targetId", String.valueOf(room.getId())
+                        )
+                );
+            } catch (Exception ignore) {
+            }
+        }
 
         // 응답 DTO 반환
         return ChatMessageDTO.MessageResponse.builder()
@@ -177,5 +218,19 @@ public class ChatMessageService {
 
         // DTO 타입을 엔티티 enum 타입으로 변환
         return ChatMessage.MessageType.valueOf(type.name());
+    }
+
+    public static String summarize(String content, int maxLength) {
+        if (content == null) return "";
+        String trimmed = content.trim();
+        if (trimmed.isEmpty()) return "";
+
+        // 개행 제거(알림 문구 깨짐 방지)
+        String singleLine = trimmed.replaceAll("\\s+", " ");
+
+        if (singleLine.length() <= maxLength) {
+            return singleLine;
+        }
+        return singleLine.substring(0, maxLength) + "...";
     }
 }
