@@ -87,7 +87,10 @@ public class SwaggerConfig {
     public GroupedOpenApi notificationApi() {
         return GroupedOpenApi.builder()
                 .group("Notification")
-                .packagesToScan(DOMAIN_BASE + ".notification")
+                .packagesToScan(
+                        DOMAIN_BASE + ".notification",
+                        DOMAIN_BASE + ".pushtoken",
+                        DOMAIN_BASE + ".push")
                 .build();
     }
 

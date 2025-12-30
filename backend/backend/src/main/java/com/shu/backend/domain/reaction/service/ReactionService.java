@@ -3,6 +3,7 @@ package com.shu.backend.domain.reaction.service;
 import com.shu.backend.domain.comment.exception.CommentException;
 import com.shu.backend.domain.comment.exception.status.CommentErrorStatus;
 import com.shu.backend.domain.comment.repository.CommentRepository;
+import com.shu.backend.domain.notification.service.NotificationService;
 import com.shu.backend.domain.post.exception.PostException;
 import com.shu.backend.domain.post.exception.status.PostErrorStatus;
 import com.shu.backend.domain.post.repository.PostRepository;
@@ -27,6 +28,7 @@ public class ReactionService {
     private final ReactionRepository reactionRepository;
     private final PostRepository postRepository;
     private final CommentRepository commentRepository;
+    private final NotificationService notificationService;
 
     @Transactional
     public ReactionApplyResponse apply(Long userId, ReactionApplyRequest req) {
@@ -54,6 +56,8 @@ public class ReactionService {
             changed = reaction.applyLike(); // false->true일 때만 true
             if (changed) {
                 increment(targetType, targetId, +1, 0);
+
+
             }
         } else { // DISLIKE
             changed = reaction.applyDislike();

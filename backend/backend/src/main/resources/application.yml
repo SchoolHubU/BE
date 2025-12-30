@@ -67,6 +67,11 @@ file:
     base-url: http://localhost:8080/uploads
 
 
+
+firebase:
+  service-account-path: C:/WorkSpace/keys/firebase-service-account.json
+
+
   # S3 기반 파일 스토리지 설정
 #  file:
 #    storage:
