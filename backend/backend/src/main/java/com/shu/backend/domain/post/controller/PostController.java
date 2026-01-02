@@ -7,6 +7,7 @@ import com.shu.backend.domain.post.dto.PostUpdateRequest;
 import com.shu.backend.domain.post.entity.Post;
 import com.shu.backend.domain.post.exception.status.PostSuccessStatus;
 import com.shu.backend.domain.post.service.PostService;
+import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.global.apiPayload.ApiResponse;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -18,6 +19,7 @@ import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.JpaSort;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.parameters.P;
 import org.springframework.web.bind.annotation.*;
 
@@ -36,9 +38,10 @@ public class PostController {
     @PostMapping("/boards/{boardId}/posts")
     public ApiResponse<Long> createPost(
             @PathVariable Long boardId,
+            @AuthenticationPrincipal User user,
             @Valid @RequestBody PostCreateRequest req
     ) {
-        Long postId = postService.createPost(boardId, req);
+        Long postId = postService.createPost(user.getId(), boardId, req);
 
         return ApiResponse.of(PostSuccessStatus.POST_CREATE_SUCCESS, postId);
     }
@@ -53,7 +56,7 @@ public class PostController {
         @PathVariable Long postId,
         @Valid @RequestBody PostUpdateRequest req
     ){
-        Long id = postService.updatePost(postId, req);
+        Long id = postService.updatePost(postId, req, req.getUserId());
 
         return ApiResponse.of(PostSuccessStatus.POST_UPDATE_SUCCESS, id);
     }

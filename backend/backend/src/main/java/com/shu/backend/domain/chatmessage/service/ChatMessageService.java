@@ -19,6 +19,7 @@ import com.shu.backend.domain.push.service.PushService;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -41,6 +42,7 @@ public class ChatMessageService {
     private final NotificationService notificationService;
     private final PushService pushService;
 
+    @PreAuthorize("@penaltyChecker.notPenalized(#senderId)")
     public ChatMessageDTO.MessageResponse send(Long senderId, ChatMessageDTO.SendRequest req) {
 
         // 채팅방 조회 (없으면 예외)

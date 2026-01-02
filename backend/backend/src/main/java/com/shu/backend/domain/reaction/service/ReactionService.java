@@ -17,6 +17,7 @@ import com.shu.backend.domain.reaction.exception.status.ReactionErrorStatus;
 import com.shu.backend.domain.reaction.repository.ReactionRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -30,6 +31,7 @@ public class ReactionService {
     private final CommentRepository commentRepository;
     private final NotificationService notificationService;
 
+    @PreAuthorize("@penaltyChecker.notPenalized(#userId)")
     @Transactional
     public ReactionApplyResponse apply(Long userId, ReactionApplyRequest req) {
         validateTargetExists(req.getTargetType(), req.getTargetId());
