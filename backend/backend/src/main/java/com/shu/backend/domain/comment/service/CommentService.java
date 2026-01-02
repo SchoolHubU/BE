@@ -20,6 +20,7 @@ import com.shu.backend.domain.user.exception.UserException;
 import com.shu.backend.domain.user.exception.status.UserErrorStatus;
 import com.shu.backend.domain.user.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -37,6 +38,7 @@ public class CommentService {
     private final NotificationService notificationService;
     private final PushService pushService;
 
+    @PreAuthorize("@penaltyChecker.notPenalized(#userId)")
     @Transactional
     public Long createComment(Long userId, Long postId, CommentCreateRequest req){
 
@@ -168,6 +170,7 @@ public class CommentService {
         return saved.getId();
     }
 
+    @PreAuthorize("@penaltyChecker.notPenalized(#userId)")
     @Transactional
     public Long updateComment(Long commentId, Long userId, CommentUpdateRequest req){
 
@@ -185,6 +188,7 @@ public class CommentService {
         return commentId;
     }
 
+    @PreAuthorize("@penaltyChecker.notPenalized(#userId)")
     @Transactional
     public Long delete(Long commentId, Long userId) {
 

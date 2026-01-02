@@ -57,6 +57,7 @@ public class Report extends BaseEntity {
     // 처리 진행 상황
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
+    @Builder.Default
     private ReportStatus status = ReportStatus.PENDING;
 
     // 처리자(admin)

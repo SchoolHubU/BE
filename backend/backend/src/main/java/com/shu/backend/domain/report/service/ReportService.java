@@ -8,6 +8,7 @@ import com.shu.backend.domain.comment.exception.status.CommentErrorStatus;
 import com.shu.backend.domain.comment.repository.CommentRepository;
 import com.shu.backend.domain.penalty.entity.Penalty;
 import com.shu.backend.domain.penalty.repository.PenaltyRepository;
+import com.shu.backend.domain.penalty.service.PenaltyService;
 import com.shu.backend.domain.post.exception.PostException;
 import com.shu.backend.domain.post.exception.status.PostErrorStatus;
 import com.shu.backend.domain.post.repository.PostRepository;
@@ -26,6 +27,7 @@ import jakarta.validation.constraints.NotNull;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -42,7 +44,9 @@ public class ReportService {
     private final CommentRepository commentRepository;
     private final ChatMessageRepository chatMessageRepository;
     private final PenaltyRepository penaltyRepository;
+    private final PenaltyService penaltyService;
 
+    @PreAuthorize("@penaltyChecker.notPenalized(#reporterId)")
     @Transactional
     public Long create(Long reporterId, ReportDTO.CreateRequest req) {
 
@@ -55,6 +59,11 @@ public class ReportService {
                 .orElseThrow(() -> new UserException(UserErrorStatus.USER_NOT_FOUND));
 
         User reportedUser = resolveReportedUser(req.getTargetType(), req.getTargetId());
+
+        //신고자와 피신고자가 같을 경우 X
+        if (reportedUser.getId().equals(reporterId)) {
+            throw new ReportException(ReportErrorStatus.SELF_REPORT_FORBIDDEN);
+        }
 
         Report report = Report.builder()
                 .reporter(reporter)
@@ -77,30 +86,14 @@ public class ReportService {
             throw new ReportException(ReportErrorStatus.REPORT_NOT_PENDING);
         }
 
-        // 한 신고에 대한 중복 제재 방지
-        if(penaltyRepository.existsByReportId(reportId)){
-            throw new ReportException(ReportErrorStatus.PENALTY_ALREADY_CREATED);
-        }
-
         User handler = userRepository.findById(adminId)
                 .orElseThrow(() -> new UserException(UserErrorStatus.USER_NOT_FOUND));
 
         report.resolve(handler);
 
-        //제재 생성 (기간은 관리자 입력)
-        LocalDateTime expiresAt = LocalDateTime.now().plusDays(penaltyDays);
-
-        Penalty penalty = Penalty.builder()
-                .report(report)
-                .user(report.getReportedUser())
-                .reason(report.getReportReason())
-                .expiresAt(expiresAt)
-                .build();
-
-        Penalty saved = penaltyRepository.save(penalty);
-        return saved.getId();
-
+        return penaltyService.create(reportId, penaltyDays);
     }
+
 
     @Transactional
     public Long reject(Long adminId, Long reportId){

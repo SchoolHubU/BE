@@ -10,11 +10,9 @@ import org.springframework.http.HttpStatus;
 
 @Getter
 @AllArgsConstructor
-public enum ReportErrorStatus implements BaseErrorCode {
+public enum PenaltyErrorStatus implements BaseErrorCode {
     //400
-    POST_NOT_FOUND(HttpStatus.NOT_FOUND, "POST4000", "존재하지 않는 게시글입니다."),
-    NO_PERMISSION_TO_WRITE(HttpStatus.BAD_REQUEST, "POST4001", "글 작성 권한이 없습니다."),
-    POST_ALREADY_DELETED(HttpStatus.BAD_REQUEST, "POST4002", "이미 삭제된 게시글입니다.");
+    PENALTY_NOT_FOUND(HttpStatus.NOT_FOUND, "PENALTY4000", "제재 정보를 찾을 수 없습니다.");
 
 
 
