@@ -3,6 +3,7 @@ package com.shu.backend.domain.admin.service;
 import com.shu.backend.domain.admin.dto.AdminBoardResponse;
 import com.shu.backend.domain.admin.dto.AdminCommentResponse;
 import com.shu.backend.domain.admin.dto.AdminPostDetailResponse;
+import com.shu.backend.domain.admin.dto.AdminPostPageResponse;
 import com.shu.backend.domain.admin.dto.AdminPostSummaryResponse;
 import com.shu.backend.domain.admin.dto.AdminSchoolResponse;
 import com.shu.backend.domain.adminaudit.enums.AdminAuditAction;
@@ -57,17 +58,28 @@ public class AdminContentService {
 
     public List<AdminBoardResponse> getBoardsBySchool(Long schoolId) {
         return boardRepository.findAdminBoardsBySchoolId(schoolId).stream()
-                .map(board -> AdminBoardResponse.from(board, postRepository.countByBoard(board)))
+                // 관리자 게시글 목록과 동일하게 삭제된 게시글은 개수에서 제외한다.
+                // 숨김 게시글은 관리 대상이므로 전체 개수에 포함한다.
+                .map(board -> AdminBoardResponse.from(
+                        board,
+                        postRepository.countByBoardAndPostStatusNot(board, PostStatus.DELETED)
+                ))
                 .toList();
     }
 
-    public Page<AdminPostSummaryResponse> getPostsByBoard(Long boardId, int page, int size) {
-        if (!boardRepository.existsById(boardId)) {
-            throw new BoardException(BoardErrorStatus.BOARD_NOT_FOUND);
-        }
+    public AdminPostPageResponse getPostsByBoard(Long boardId, int page, int size) {
+        Board board = boardRepository.findById(boardId)
+                .orElseThrow(() -> new BoardException(BoardErrorStatus.BOARD_NOT_FOUND));
+
         Pageable pageable = PageRequestUtils.of(page, size, 100, Sort.by(Sort.Direction.DESC, "createdAt"));
-        return postRepository.findByBoardIdAndPostStatusNot(boardId, PostStatus.DELETED, pageable)
+        Page<AdminPostSummaryResponse> posts =
+                postRepository.findByBoardIdAndPostStatusNot(boardId, PostStatus.DELETED, pageable)
                 .map(AdminPostSummaryResponse::from);
+
+        long visibleCount = postRepository.countByBoardAndPostStatus(board, PostStatus.ACTIVE);
+        long hiddenCount = postRepository.countByBoardAndPostStatus(board, PostStatus.HIDDEN);
+
+        return AdminPostPageResponse.from(posts, visibleCount, hiddenCount);
     }
 
     public AdminPostDetailResponse getPostDetail(Long postId) {

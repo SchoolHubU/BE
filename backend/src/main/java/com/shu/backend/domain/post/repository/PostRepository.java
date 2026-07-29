@@ -276,7 +276,17 @@ public interface PostRepository extends JpaRepository<Post, Long> {
     """)
     List<Object[]> findLikedPostRows(@Param("postIds") Collection<Long> postIds);
 
-    int countByBoard(Board board);
+    /**
+     * 관리자 모니터링에서 삭제된 게시글은 목록에 노출하지 않으므로
+     * 게시판 카드의 전체 개수에서도 같은 기준으로 제외한다.
+     */
+    int countByBoardAndPostStatusNot(Board board, PostStatus postStatus);
+
+    /**
+     * 관리자 게시글 목록의 상태별 집계를 계산한다.
+     * HIDDEN은 전체 개수에 포함되는 부분집합이며 DELETED만 전체에서 제외된다.
+     */
+    long countByBoardAndPostStatus(Board board, PostStatus postStatus);
 
     boolean existsByBoardAndTitle(Board board, String title);
 
