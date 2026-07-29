@@ -3,7 +3,7 @@ package com.shu.backend.domain.admin.controller;
 import com.shu.backend.domain.admin.dto.AdminBoardResponse;
 import com.shu.backend.domain.admin.dto.AdminModerationRequest;
 import com.shu.backend.domain.admin.dto.AdminPostDetailResponse;
-import com.shu.backend.domain.admin.dto.AdminPostSummaryResponse;
+import com.shu.backend.domain.admin.dto.AdminPostPageResponse;
 import com.shu.backend.domain.admin.dto.AdminSchoolResponse;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.domain.admin.service.AdminContentService;
@@ -48,7 +48,7 @@ public class AdminContentController {
     }
 
     @GetMapping("/boards/{boardId}/posts")
-    public ApiResponse<Page<AdminPostSummaryResponse>> getPostsByBoard(
+    public ApiResponse<AdminPostPageResponse> getPostsByBoard(
             @PathVariable Long boardId,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "20") int size
