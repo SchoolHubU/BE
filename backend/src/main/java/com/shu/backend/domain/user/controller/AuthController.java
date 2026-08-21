@@ -40,6 +40,7 @@ public class AuthController {
             summary = "회원가입",
             description = "회원정보와 학생증 이미지를 받아 회원가입을 수행하고, 학교 인증 요청을 생성합니다."
     )
+    @RateLimit(key = "auth:signup", limit = 10, windowSeconds = 300, byIp = true)
     @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<SignUpResponseDTO> signUp(
             @Parameter(
@@ -59,18 +60,23 @@ public class AuthController {
             )
             @RequestPart("studentCard") MultipartFile studentCardImage
     ) {
-        // 이미지 필수 체크
         if (studentCardImage == null || studentCardImage.isEmpty()) {
             throw new SchoolException(SchoolErrorStatus.REQUEST_IMAGE_REQUIRED);
         }
 
-        // 프라이빗 버킷에 업로드 후 S3 key 반환
-        String imageKey = fileStorageService.uploadStudentCardImage(studentCardImage);
+        authService.validateSignUpBeforeStudentCardUpload(request);
 
-        log.info("학생증 S3 key = {}", imageKey);
+        String imageKey = null;
+        SignUpResponseDTO result;
+        try {
+            imageKey = fileStorageService.uploadStudentCardImage(studentCardImage);
+            log.info("Student card uploaded for signup: key={}", imageKey);
 
-        // 회원가입 + 인증요청 생성 + 토큰 발급
-        SignUpResponseDTO result = authService.join(request, imageKey);
+            result = authService.join(request, imageKey);
+        } catch (RuntimeException e) {
+            cleanupUploadedStudentCardImage(imageKey, "signup", e);
+            throw e;
+        }
 
         return ApiResponse.of(UserSuccessStatus.USER_SIGNUP_SUCCESS, result);
     }
@@ -122,6 +128,7 @@ public class AuthController {
             summary = "학교 인증 재요청",
             description = "학교 인증이 거절(REJECTED)된 사용자가 이메일/비밀번호 본인 확인 후 학생증 이미지를 다시 업로드하여 재요청합니다."
     )
+    @RateLimit(key = "auth:verification-reapply", limit = 5, windowSeconds = 300, byIp = true)
     @PostMapping(value = "/verification/reapply", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
     public ApiResponse<Long> reapplyVerification(
             @RequestPart("data") @Valid UserRequestDTO.VerificationReapply req,
@@ -131,11 +138,19 @@ public class AuthController {
             throw new SchoolException(SchoolErrorStatus.REQUEST_IMAGE_REQUIRED);
         }
 
-        String imageKey = fileStorageService.uploadStudentCardImage(studentCardImage);
+        String imageKey = null;
+        Long requestId;
+        try {
+            imageKey = fileStorageService.uploadStudentCardImage(studentCardImage);
+            log.info("Student card uploaded for verification reapply: key={}", imageKey);
 
-        return ApiResponse.onSuccess(
-                authService.reapplyVerification(req, imageKey)
-        );
+            requestId = authService.reapplyVerification(req, imageKey);
+        } catch (RuntimeException e) {
+            cleanupUploadedStudentCardImage(imageKey, "verification-reapply", e);
+            throw e;
+        }
+
+        return ApiResponse.onSuccess(requestId);
     }
 
     // =================== 학교 인증 재요청 정보 조회 ===================
@@ -250,5 +265,24 @@ public class AuthController {
         return ApiResponse.of(UserSuccessStatus.USER_RESTORE_SUCCESS, result);
     }
 
+
+    private void cleanupUploadedStudentCardImage(String imageKey, String flow, RuntimeException cause) {
+        if (imageKey == null || imageKey.isBlank()) {
+            return;
+        }
+
+        try {
+            fileStorageService.deleteStudentCardImage(imageKey);
+            log.info("Cleaned up uploaded student card after {} failure: key={}", flow, imageKey);
+        } catch (Exception cleanupError) {
+            log.warn(
+                    "Failed to clean up uploaded student card after {} failure: key={}, originalError={}",
+                    flow,
+                    imageKey,
+                    cause.getClass().getSimpleName(),
+                    cleanupError
+            );
+        }
+    }
 }
 

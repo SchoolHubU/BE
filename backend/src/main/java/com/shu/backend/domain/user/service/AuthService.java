@@ -84,6 +84,16 @@ public class AuthService {
         return new SignUpResponseDTO(newUser.getId(), accessToken, refreshToken);
     }
 
+    @Transactional(readOnly = true)
+    public void validateSignUpBeforeStudentCardUpload(UserRequestDTO.SignUp request) {
+        validateSignUpRequest(request);
+        smsVerificationService.validateTokenOrThrow(
+                request.getVerificationToken(),
+                request.getEmail()
+        );
+        getSchool(request);
+    }
+
     // 로그인
     @Transactional
     public LoginResponseDTO login(UserLoginDTO userLoginDTO) {
@@ -323,16 +333,24 @@ public class AuthService {
     }
 
     private void notifyVerificationRequest(Long requestId, String schoolName) {
-        // 관리자 알림함 기록 + 푸시
-        // (인증 요청자는 가입 단계라 관리자일 수 없으므로 actorId는 null로 둔다)
-        adminPushService.notifyActiveAdmins(
-                NotificationType.ADMIN_VERIFICATION,
-                NotificationTargetType.VERIFICATION_REQUEST,
-                requestId,
-                "새 학교 인증 요청",
-                schoolName + " 인증 요청이 접수되었습니다.",
-                null
-        );
+        try {
+            // Admin notification must not roll back signup or verification reapply.
+            adminPushService.notifyActiveAdmins(
+                    NotificationType.ADMIN_VERIFICATION,
+                    NotificationTargetType.VERIFICATION_REQUEST,
+                    requestId,
+                    "새 학교 인증 요청",
+                    schoolName + " 인증 요청이 접수되었습니다.",
+                    null
+            );
+        } catch (Exception e) {
+            log.warn(
+                    "Admin verification notification failed: requestId={}, schoolName={}",
+                    requestId,
+                    schoolName,
+                    e
+            );
+        }
     }
 
     @Transactional(readOnly = true)

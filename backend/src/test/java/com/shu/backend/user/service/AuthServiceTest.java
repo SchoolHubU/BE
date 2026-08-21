@@ -39,6 +39,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.BDDMockito.given;
 import static org.mockito.BDDMockito.willDoNothing;
+import static org.mockito.BDDMockito.willThrow;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 
@@ -180,6 +181,100 @@ public class AuthServiceTest {
         assertThat(savedRequest.getRequestImageUrl()).isEqualTo(requestImageUrl);
         assertThat(savedRequest.getStatus()).isNotNull();
         assertThat(savedRequest.getRequestedAt()).isNotNull();
+    }
+
+    @Test
+    @DisplayName("관리자 알림 실패가 회원가입과 학교 인증 요청 생성을 실패시키지 않는다")
+    void join_success_whenAdminNotificationFails() throws Exception {
+        String email = "push-fail@example.com";
+        String nickname = "pushfail";
+        String schoolName = "테스트고등학교";
+        String rawPassword = "password1234";
+        String encodedPassword = "encoded_pw";
+        String requestImageUrl = "student-card/card.png";
+        String phoneNumber = "01012345678";
+        String verificationToken = "verification-token";
+
+        UserRequestDTO.SignUp request = UserRequestDTO.SignUp.builder()
+                .username("홍길동")
+                .email(email)
+                .nickname(nickname)
+                .school(schoolName)
+                .password(rawPassword)
+                .gender(Gender.MALE)
+                .grade(Grade.FIRST)
+                .phoneNumber(phoneNumber)
+                .verificationToken(verificationToken)
+                .build();
+
+        School school = School.builder()
+                .id(1L)
+                .name(schoolName)
+                .build();
+
+        willDoNothing().given(smsVerificationService)
+                .verifyTokenOrThrow(verificationToken, email);
+        given(userRepository.existsByEmail(email)).willReturn(false);
+        given(userRepository.existsByNickname(nickname)).willReturn(false);
+        given(schoolRepository.findFirstByNameOrderByIdAsc(schoolName)).willReturn(Optional.of(school));
+        given(passwordEncoder.encode(rawPassword)).willReturn(encodedPassword);
+        given(userRepository.save(any(User.class)))
+                .willAnswer(invocation -> {
+                    User u = invocation.getArgument(0);
+                    java.lang.reflect.Field idField = User.class.getDeclaredField("id");
+                    idField.setAccessible(true);
+                    idField.set(u, 100L);
+                    return u;
+                });
+        given(verificationRequestRepository.save(any(UserSchoolVerificationRequest.class)))
+                .willAnswer(invocation -> invocation.getArgument(0));
+        willThrow(new RuntimeException("push failed"))
+                .given(adminPushService)
+                .notifyActiveAdmins(any(), any(), any(), anyString(), anyString(), any());
+        given(jwtTokenProvider.createAccessToken(100L)).willReturn("fake-jwt-token");
+        given(jwtProperties.getRefreshTokenExpiration()).willReturn(1209600000L);
+
+        SignUpResponseDTO response = authService.join(request, requestImageUrl);
+
+        assertThat(response).isNotNull();
+        assertThat(response.getUserId()).isEqualTo(100L);
+        assertThat(response.getAccessToken()).isEqualTo("fake-jwt-token");
+        verify(userRepository).save(any(User.class));
+        verify(verificationRequestRepository).save(any(UserSchoolVerificationRequest.class));
+    }
+
+    @Test
+    @DisplayName("회원가입 사전 검증은 토큰을 소비하지 않고 업로드 전 검증만 수행한다")
+    void validateSignUpBeforeStudentCardUpload_success() {
+        String email = "precheck@example.com";
+        String nickname = "precheck";
+        String schoolName = "테스트고등학교";
+        String verificationToken = "verification-token";
+
+        UserRequestDTO.SignUp request = UserRequestDTO.SignUp.builder()
+                .email(email)
+                .nickname(nickname)
+                .school(schoolName)
+                .verificationToken(verificationToken)
+                .build();
+
+        School school = School.builder()
+                .id(1L)
+                .name(schoolName)
+                .build();
+
+        given(userRepository.existsByEmail(email)).willReturn(false);
+        given(userRepository.existsByNickname(nickname)).willReturn(false);
+        willDoNothing().given(smsVerificationService)
+                .validateTokenOrThrow(verificationToken, email);
+        given(schoolRepository.findFirstByNameOrderByIdAsc(schoolName)).willReturn(Optional.of(school));
+
+        authService.validateSignUpBeforeStudentCardUpload(request);
+
+        verify(smsVerificationService).validateTokenOrThrow(verificationToken, email);
+        verify(smsVerificationService, never()).verifyTokenOrThrow(anyString(), anyString());
+        verify(userRepository, never()).save(any(User.class));
+        verify(verificationRequestRepository, never()).save(any(UserSchoolVerificationRequest.class));
     }
 
     @Test
