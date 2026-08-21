@@ -15,6 +15,10 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class VerificationCodeStore {
 
+    private static final long CODE_TTL_MINUTES = 5;
+    public static final String PURPOSE_SIGNUP = "SIGNUP";
+    public static final String PURPOSE_PASSWORD_RESET = "PASSWORD_RESET";
+
     private final StringRedisTemplate redisTemplate;
 
     public VerificationCodeStore(StringRedisTemplate redisTemplate) {
@@ -29,9 +33,22 @@ public class VerificationCodeStore {
         return "sms:attempts:" + target;
     }
 
+    private String purposeKey(String target) {
+        return "sms:purpose:" + target;
+    }
+
     // 이메일 인증번호 저장
     public void save(String target, String code) {
-        redisTemplate.opsForValue().set(key(target), code, 3, TimeUnit.MINUTES);
+        save(target, code, PURPOSE_SIGNUP);
+    }
+
+    public void savePasswordReset(String target, String code) {
+        save(target, code, PURPOSE_PASSWORD_RESET);
+    }
+
+    private void save(String target, String code, String purpose) {
+        redisTemplate.opsForValue().set(key(target), code, CODE_TTL_MINUTES, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(purposeKey(target), purpose, CODE_TTL_MINUTES, TimeUnit.MINUTES);
     }
 
     // 저장된 인증번호 조회
@@ -39,16 +56,21 @@ public class VerificationCodeStore {
         return redisTemplate.opsForValue().get(key(target));
     }
 
+    public String getPurpose(String target) {
+        return redisTemplate.opsForValue().get(purposeKey(target));
+    }
+
     // 인증 완료 또는 만료 처리 시 인증번호 삭제
     public void delete(String target) {
         redisTemplate.delete(key(target));
+        redisTemplate.delete(purposeKey(target));
     }
 
     // 실패 횟수 1 증가 후 현재 값 반환 (처음 카운트 시 TTL을 코드와 동일하게 설정)
     public int incrementAttempts(String target) {
         Long count = redisTemplate.opsForValue().increment(attemptKey(target));
         if (count != null && count == 1) {
-            redisTemplate.expire(attemptKey(target), 3, TimeUnit.MINUTES);
+            redisTemplate.expire(attemptKey(target), CODE_TTL_MINUTES, TimeUnit.MINUTES);
         }
         return count != null ? count.intValue() : 1;
     }

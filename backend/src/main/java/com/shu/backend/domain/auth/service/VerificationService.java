@@ -37,7 +37,7 @@ public class VerificationService {
      */
     public String sendPasswordResetCode(String target) {
         String code = String.valueOf(ThreadLocalRandom.current().nextInt(100000, 999999));
-        codeStore.save(target, code);
+        codeStore.savePasswordReset(target, code);
         codeStore.deleteAttempts(target);  // 재발송 시 이전 실패 횟수 초기화
         provider.sendPasswordReset(target, code);
         return code;
@@ -65,11 +65,16 @@ public class VerificationService {
             throw new UserException(UserErrorStatus.VERIFICATION_CODE_INVALID);
         }
 
+        String purpose = codeStore.getPurpose(target);
         codeStore.delete(target);
         codeStore.deleteAttempts(target);
 
         String token = "verif_" + UUID.randomUUID();
-        tokenStore.save(token, target);
+        if (VerificationCodeStore.PURPOSE_SIGNUP.equals(purpose)) {
+            tokenStore.saveForSignup(token, target);
+        } else {
+            tokenStore.save(token, target);
+        }
 
         return token;
     }
@@ -90,6 +95,19 @@ public class VerificationService {
      * 인증을 거치지 않을경우 예외를 발생
      */
     public void verifyTokenOrThrow(String token, String target) {
+        validateTokenOrThrow(token, target);
+
+        tokenStore.consume(token);
+    }
+
+    /**
+     * Token validation without consumption.
+     *
+     * Use this before expensive side effects such as S3 uploads. The final
+     * signup flow must still call verifyTokenOrThrow so the token is consumed
+     * exactly once immediately before account creation.
+     */
+    public void validateTokenOrThrow(String token, String target) {
         String saved = tokenStore.get(token);
         //토큰 자체가 없다면
         if (saved == null) {
@@ -99,7 +117,5 @@ public class VerificationService {
         if (!saved.equals(target)) {
             throw new UserException(UserErrorStatus.VERIFICATION_TARGET_MISMATCH);
         }
-
-        tokenStore.consume(token);
     }
 }

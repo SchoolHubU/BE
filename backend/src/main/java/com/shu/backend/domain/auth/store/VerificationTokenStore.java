@@ -14,6 +14,9 @@ import java.util.concurrent.TimeUnit;
 @Component
 public class VerificationTokenStore {
 
+    private static final long DEFAULT_TOKEN_TTL_MINUTES = 5;
+    private static final long SIGNUP_TOKEN_TTL_HOURS = 1;
+
     private final StringRedisTemplate redisTemplate;
 
     public VerificationTokenStore(StringRedisTemplate redisTemplate) {
@@ -26,7 +29,11 @@ public class VerificationTokenStore {
 
     // 인증 완료 토큰 저장
     public void save(String token, String phone) {
-        redisTemplate.opsForValue().set(key(token), phone, 5, TimeUnit.MINUTES);
+        redisTemplate.opsForValue().set(key(token), phone, DEFAULT_TOKEN_TTL_MINUTES, TimeUnit.MINUTES);
+    }
+
+    public void saveForSignup(String token, String phone) {
+        redisTemplate.opsForValue().set(key(token), phone, SIGNUP_TOKEN_TTL_HOURS, TimeUnit.HOURS);
     }
 
     // 토큰으로 인증된 휴대폰 번호 조회
