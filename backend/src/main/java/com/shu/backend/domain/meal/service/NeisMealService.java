@@ -7,6 +7,7 @@ import com.shu.backend.domain.school.exception.status.SchoolErrorStatus;
 import com.shu.backend.domain.school.repository.SchoolRepository;
 import com.shu.backend.global.neis.NeisApiClient;
 import com.shu.backend.global.neis.NeisSchoolSyncService;
+import com.shu.backend.global.util.HtmlText;
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
@@ -24,7 +25,7 @@ public class NeisMealService {
     private final SchoolRepository schoolRepository;
     private final NeisSchoolSyncService neisSchoolSyncService;
 
-    @Cacheable(value = "meal", key = "'v3_' + #schoolId + '_' + #from + '_' + #to", unless = "#result.meals.isEmpty()")
+    @Cacheable(value = "meal", key = "'v4_' + #schoolId + '_' + #from + '_' + #to", unless = "#result.meals.isEmpty()")
     public MealDTO.MealListResponse getMeals(Long schoolId, String from, String to) {
         School school = schoolRepository.findById(schoolId)
                 .orElseThrow(() -> new SchoolException(SchoolErrorStatus.SCHOOL_NOT_FOUND));
@@ -56,10 +57,9 @@ public class NeisMealService {
         String rawDishes = (String) row.getOrDefault("DDISH_NM", "");
         String calories = (String) row.getOrDefault("CAL_INFO", "");
 
-        List<String> dishes = Arrays.stream(rawDishes.split("<br/>|\\n"))
-                .map(String::trim)
+        List<String> dishes = Arrays.stream(HtmlText.unescapeOrEmpty(rawDishes).split("(?i)<br\\s*/?>|\\n"))
+                .map(this::cleanDishName)
                 .filter(s -> !s.isBlank())
-                .map(s -> s.replaceAll("\\([\\d\\.]+\\)", "").trim())
                 .collect(Collectors.toList());
 
         return MealDTO.MealItem.builder()
@@ -67,5 +67,20 @@ public class NeisMealService {
                 .dishes(dishes)
                 .calories(calories)
                 .build();
+    }
+
+    private String cleanDishName(String dishName) {
+        String cleaned = dishName == null ? "" : dishName.trim();
+        if (cleaned.isBlank()) {
+            return "";
+        }
+
+        return cleaned
+                .replaceAll("\\s+", " ")
+                .replaceAll("\\(\\s*\\d{1,2}(?:\\s*[.,]\\s*\\d{1,2})*\\s*[.]?\\s*\\)", "")
+                .replaceAll("\\*+$", "")
+                .replaceAll("(?:\\d{1,2}\\.){1,19}\\d{0,2}\\.?$", "")
+                .replaceAll("\\*+$", "")
+                .trim();
     }
 }
