@@ -2,6 +2,7 @@ package com.shu.backend.domain.admin.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.shu.backend.domain.comment.entity.Comment;
+import com.shu.backend.global.util.HtmlText;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -35,7 +36,7 @@ public class AdminCommentResponse {
                 .authorLabel(label)
                 .anonymous(false)
                 .commentStatus(comment.getCommentStatus().name())
-                .content(comment.getContent())
+                .content(HtmlText.unescape(comment.getContent()))
                 .likeCount(comment.getLikeCount())
                 .dislikeCount(comment.getDislikeCount())
                 .depth(comment.getDepth())

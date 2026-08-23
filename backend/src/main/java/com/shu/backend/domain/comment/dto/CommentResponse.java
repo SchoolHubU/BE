@@ -7,6 +7,7 @@ import com.shu.backend.domain.comment.entity.Comment;
 import com.shu.backend.domain.comment.enums.CommentStatus;
 import com.shu.backend.domain.user.enums.UserRole;
 import com.shu.backend.domain.user.support.UserDisplay;
+import com.shu.backend.global.util.HtmlText;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -56,7 +57,7 @@ public class CommentResponse {
         String content = switch (comment.getCommentStatus()) {
             case DELETED -> "삭제된 댓글입니다.";
             case HIDDEN -> "블라인드 처리된 댓글입니다.";
-            default -> comment.getContent();
+            default -> HtmlText.unescape(comment.getContent());
         };
 
         boolean authorDeleted = UserDisplay.isDeleted(comment.getUser());

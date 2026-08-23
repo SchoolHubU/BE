@@ -24,6 +24,7 @@ import com.shu.backend.domain.warning.entity.Warning;
 import com.shu.backend.domain.warning.exception.WarningException;
 import com.shu.backend.domain.warning.exception.status.WarningErrorStatus;
 import com.shu.backend.domain.warning.repository.WarningRepository;
+import com.shu.backend.global.util.HtmlText;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -154,10 +155,10 @@ public class WarningService {
     private String resolveTargetSummary(TargetType targetType, Long targetId) {
         return switch (targetType) {
             case POST -> postRepository.findById(targetId)
-                    .map(p -> truncate(p.getTitle(), 80))
+                    .map(p -> truncate(HtmlText.unescape(p.getTitle()), 80))
                     .orElse("(삭제된 게시글)");
             case COMMENT -> commentRepository.findById(targetId)
-                    .map(c -> truncate(c.getContent(), 80))
+                    .map(c -> truncate(HtmlText.unescape(c.getContent()), 80))
                     .orElse("(삭제된 댓글)");
             default -> "";
         };

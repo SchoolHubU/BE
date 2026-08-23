@@ -7,6 +7,7 @@ import com.shu.backend.domain.user.enums.Grade;
 import com.shu.backend.global.neis.NeisApiClient;
 import com.shu.backend.global.neis.NeisSchoolSyncService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class NeisTimetableService {
 
     private final NeisApiClient neisApiClient;
@@ -28,16 +30,17 @@ public class NeisTimetableService {
 
     @Cacheable(
             value = "timetable",
-            key = "'v6_' + #user.school.id + '_' + #user.grade.name() + '_' + #classRoom + '_' + #from + '_' + #to",
+            key = "'v7_' + #user.school.id + '_' + #user.grade.name() + '_' + #classRoom + '_' + #from + '_' + #to",
             unless = "#result.periods.isEmpty()"
     )
     public TimetableDTO.WeekResponse getTimetable(
             User user, String classRoom, String from, String to) {
 
+        String normalizedClassRoom = normalizeClassRoom(classRoom);
         String gradeNum = toNeisGrade(user.getGrade());
         if (gradeNum == null) {
             return TimetableDTO.WeekResponse.builder()
-                    .grade("0").classRoom(classRoom).periods(List.of()).neisAvailable(false).build();
+                    .grade("0").classRoom(normalizedClassRoom).periods(List.of()).neisAvailable(false).build();
         }
 
         // NEIS 코드 없으면 학교명으로 자동 조회·저장 시도
@@ -48,16 +51,14 @@ public class NeisTimetableService {
 
         if (school.getNeisOfficeCode() == null || school.getNeisSchoolCode() == null) {
             return TimetableDTO.WeekResponse.builder()
-                    .grade(gradeNum).classRoom(classRoom).periods(List.of()).neisAvailable(false).build();
+                    .grade(gradeNum).classRoom(normalizedClassRoom).periods(List.of()).neisAvailable(false).build();
         }
 
         LocalDate fromDate = LocalDate.parse(from, DateTimeFormatter.BASIC_ISO_DATE);
         LocalDate toDate = LocalDate.parse(to, DateTimeFormatter.BASIC_ISO_DATE);
-        String ay = String.valueOf(fromDate.getYear());
-        String sem = fromDate.getMonthValue() >= 3 && fromDate.getMonthValue() <= 8 ? "1" : "2";
 
         List<Map<String, Object>> rows = fetchWeekByDateAndPeriod(
-                school, ay, sem, gradeNum, classRoom, fromDate, toDate);
+                school, gradeNum, normalizedClassRoom, fromDate, toDate);
 
         List<TimetableDTO.Period> periods = rows.stream()
                 .map(row -> TimetableDTO.Period.builder()
@@ -83,7 +84,7 @@ public class NeisTimetableService {
 
         return TimetableDTO.WeekResponse.builder()
                 .grade(gradeNum)
-                .classRoom(classRoom)
+                .classRoom(normalizedClassRoom)
                 .periods(periods)
                 .neisAvailable(true)
                 .build();
@@ -111,8 +112,6 @@ public class NeisTimetableService {
 
     private List<Map<String, Object>> fetchWeekByDateAndPeriod(
             School school,
-            String ay,
-            String sem,
             String gradeNum,
             String classRoom,
             LocalDate fromDate,
@@ -125,23 +124,126 @@ public class NeisTimetableService {
             int dayOfWeek = date.getDayOfWeek().getValue();
             if (dayOfWeek >= 1 && dayOfWeek <= 5) {
                 String dateParam = date.format(DateTimeFormatter.BASIC_ISO_DATE);
-                rows.addAll(neisApiClient.getTimetableDate(
-                        school.getNeisOfficeCode(),
-                        school.getNeisSchoolCode(),
-                        ay, sem, gradeNum, classRoom, dateParam
-                ));
-                for (int period = 1; period <= 8; period++) {
-                    rows.addAll(neisApiClient.getTimetablePeriod(
-                            school.getNeisOfficeCode(),
-                            school.getNeisSchoolCode(),
-                            ay, sem, gradeNum, classRoom, dateParam, period
-                    ));
+                TimetableRows dayRows = fetchDateWithSemesterFallback(
+                        school, gradeNum, classRoom, date, dateParam);
+
+                if (!dayRows.rows().isEmpty()) {
+                    rows.addAll(dayRows.rows());
+                    for (int period = 1; period <= 8; period++) {
+                        rows.addAll(neisApiClient.getTimetablePeriod(
+                                school.getNeisOfficeCode(),
+                                school.getNeisSchoolCode(),
+                                toAcademicYear(date), dayRows.semester(), gradeNum, classRoom, dateParam, period));
+                    }
+                } else {
+                    for (int period = 1; period <= 8; period++) {
+                        rows.addAll(fetchPeriodWithSemesterFallback(
+                                school, gradeNum, classRoom, date, dateParam, period));
+                    }
                 }
             }
             date = date.plusDays(1);
         }
 
         return rows;
+    }
+
+    private TimetableRows fetchDateWithSemesterFallback(
+            School school,
+            String gradeNum,
+            String classRoom,
+            LocalDate date,
+            String dateParam) {
+
+        String ay = toAcademicYear(date);
+        for (String semester : semesterCandidates(date)) {
+            List<Map<String, Object>> rows = neisApiClient.getTimetableDate(
+                    school.getNeisOfficeCode(),
+                    school.getNeisSchoolCode(),
+                    ay, semester, gradeNum, classRoom, dateParam
+            );
+
+            if (!rows.isEmpty()) {
+                log.debug("[NEIS] timetable loaded: schoolId={}, date={}, ay={}, sem={}, grade={}, class={}, rows={}",
+                        school.getId(), dateParam, ay, semesterLabel(semester), gradeNum, classRoom, rows.size());
+                return new TimetableRows(semester, rows);
+            }
+        }
+
+        return new TimetableRows("", List.of());
+    }
+
+    private List<Map<String, Object>> fetchPeriodWithSemesterFallback(
+            School school,
+            String gradeNum,
+            String classRoom,
+            LocalDate date,
+            String dateParam,
+            int period) {
+
+        String ay = toAcademicYear(date);
+        for (String semester : semesterCandidates(date)) {
+            List<Map<String, Object>> rows = neisApiClient.getTimetablePeriod(
+                    school.getNeisOfficeCode(),
+                    school.getNeisSchoolCode(),
+                    ay, semester, gradeNum, classRoom, dateParam, period
+            );
+
+            if (!rows.isEmpty()) {
+                log.debug("[NEIS] timetable period loaded: schoolId={}, date={}, ay={}, sem={}, grade={}, class={}, period={}, rows={}",
+                        school.getId(), dateParam, ay, semesterLabel(semester), gradeNum, classRoom, period, rows.size());
+                return rows;
+            }
+        }
+
+        return List.of();
+    }
+
+    private String toAcademicYear(LocalDate date) {
+        return String.valueOf(date.getMonthValue() <= 2 ? date.getYear() - 1 : date.getYear());
+    }
+
+    private List<String> semesterCandidates(LocalDate date) {
+        String preferred = preferredSemester(date);
+        String alternate = "1".equals(preferred) ? "2" : "1";
+        return List.of(preferred, alternate, "");
+    }
+
+    private String preferredSemester(LocalDate date) {
+        int month = date.getMonthValue();
+        return month >= 3 && month <= 8 ? "1" : "2";
+    }
+
+    private String normalizeClassRoom(String classRoom) {
+        if (classRoom == null) {
+            return "";
+        }
+
+        String normalized = classRoom.trim()
+                .replaceAll("\\s+", "")
+                .replace('０', '0')
+                .replace('１', '1')
+                .replace('２', '2')
+                .replace('３', '3')
+                .replace('４', '4')
+                .replace('５', '5')
+                .replace('６', '6')
+                .replace('７', '7')
+                .replace('８', '8')
+                .replace('９', '9');
+
+        if (normalized.endsWith("반")) {
+            normalized = normalized.substring(0, normalized.length() - 1);
+        }
+
+        return normalized;
+    }
+
+    private String semesterLabel(String semester) {
+        return semester == null || semester.isBlank() ? "none" : semester;
+    }
+
+    private record TimetableRows(String semester, List<Map<String, Object>> rows) {
     }
 
     private String stringValue(Object value) {

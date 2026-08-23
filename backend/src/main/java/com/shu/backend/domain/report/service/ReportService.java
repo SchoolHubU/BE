@@ -31,6 +31,7 @@ import com.shu.backend.domain.user.exception.UserException;
 import com.shu.backend.domain.user.exception.status.UserErrorStatus;
 import com.shu.backend.domain.user.repository.UserRepository;
 import com.shu.backend.domain.user.support.UserDisplay;
+import com.shu.backend.global.util.HtmlText;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -227,10 +228,10 @@ public class ReportService {
     private String resolveTargetContent(TargetType targetType, Long targetId) {
         return switch (targetType) {
             case POST -> postRepository.findById(targetId)
-                    .map(p -> "[제목] " + p.getTitle() + "\n" + p.getContent())
+                    .map(p -> "[제목] " + HtmlText.unescape(p.getTitle()) + "\n" + HtmlText.unescape(p.getContent()))
                     .orElse("(삭제된 게시글)");
             case COMMENT -> commentRepository.findById(targetId)
-                    .map(Comment::getContent)
+                    .map(comment -> HtmlText.unescape(comment.getContent()))
                     .orElse("(삭제된 댓글)");
             case USER -> userRepository.findById(targetId)
                     .map(user -> "채팅 상대 사용자 신고: " + UserDisplay.nicknameOrDeleted(user))
