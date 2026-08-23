@@ -17,6 +17,7 @@ import com.shu.backend.domain.verification.repository.UserSchoolVerificationRepo
 import com.shu.backend.domain.verification.repository.UserSchoolVerificationRequestRepository;
 import com.shu.backend.global.exception.GeneralException;
 import com.shu.backend.global.file.FileStorageService;
+import com.shu.backend.global.util.HtmlText;
 import com.shu.backend.global.util.PageRequestUtils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -124,8 +125,8 @@ public class UserService {
                 .limit(pageable.getPageSize())
                 .map(r -> UserDTO.MyPostResponse.builder()
                         .postId((Long) r[0])
-                        .title((String) r[1])
-                        .content((String) r[2])
+                        .title(HtmlText.unescape((String) r[1]))
+                        .content(HtmlText.unescape((String) r[2]))
                         .postStatus(r[3] instanceof Enum<?> e ? e.name() : String.valueOf(r[3]))
                         .likeCount(r[4] == null ? 0 : ((Number) r[4]).intValue())
                         .createdAt((LocalDateTime) r[5])
@@ -146,9 +147,9 @@ public class UserService {
                 .limit(pageable.getPageSize())
                 .map(r -> UserDTO.MyCommentResponse.builder()
                         .commentId((Long) r[0])
-                        .content((String) r[1])
+                        .content(HtmlText.unescape((String) r[1]))
                         .postId((Long) r[2])
-                        .postTitle((String) r[3])
+                        .postTitle(HtmlText.unescape((String) r[3]))
                         .likeCount(r[4] == null ? 0 : ((Number) r[4]).intValue())
                         .createdAt((LocalDateTime) r[5])
                         .boardTitle((String) r[6])
@@ -179,8 +180,8 @@ public class UserService {
         List<Object[]> rows = postRepository.findLikedPostRows(postIds);
         return rows.stream().map(r -> UserDTO.MyPostResponse.builder()
                 .postId((Long) r[0])
-                .title((String) r[1])
-                .content((String) r[2])
+                .title(HtmlText.unescape((String) r[1]))
+                .content(HtmlText.unescape((String) r[2]))
                 .postStatus(r[3] instanceof Enum<?> e ? e.name() : String.valueOf(r[3]))
                 .likeCount(r[4] == null ? 0 : ((Number) r[4]).intValue())
                 .createdAt((LocalDateTime) r[5])

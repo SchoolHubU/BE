@@ -3,6 +3,7 @@ package com.shu.backend.domain.admin.dto;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.shu.backend.domain.post.dto.PostMediaResponse;
 import com.shu.backend.domain.post.entity.Post;
+import com.shu.backend.global.util.HtmlText;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -46,8 +47,8 @@ public class AdminPostDetailResponse {
 
         return AdminPostDetailResponse.builder()
                 .postId(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
+                .title(HtmlText.unescape(post.getTitle()))
+                .content(HtmlText.unescape(post.getContent()))
                 .postStatus(post.getPostStatus().name())
                 .anonymous(false)
                 .authorUserId(authorId)

@@ -8,6 +8,7 @@ import com.shu.backend.domain.poll.dto.PollResponse;
 import com.shu.backend.domain.post.entity.Post;
 import com.shu.backend.domain.user.enums.UserRole;
 import com.shu.backend.domain.user.support.UserDisplay;
+import com.shu.backend.global.util.HtmlText;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -79,8 +80,8 @@ public class PostDetailResponse {
                 .authorUserId(authorDeleted ? null : post.getUser().getId())
                 .isMine(!authorDeleted && mine)
                 .authorId(authorDeleted ? null : post.getUser().getId())
-                .title(post.getTitle())
-                .content(post.getContent())
+                .title(HtmlText.unescape(post.getTitle()))
+                .content(HtmlText.unescape(post.getContent()))
                 .viewCount(post.getViewCount())
                 .anonymous(false)
                 .likeCount(post.getLikeCount())

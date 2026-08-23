@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.shu.backend.domain.post.entity.Post;
 import com.shu.backend.domain.user.enums.UserStatus;
 import com.shu.backend.domain.user.support.UserDisplay;
+import com.shu.backend.global.util.HtmlText;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -92,8 +93,8 @@ public class PostResponse {
         String username = UserDisplay.usernameOrDeleted(post.getUser());
         return PostResponse.builder()
                 .id(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
+                .title(HtmlText.unescape(post.getTitle()))
+                .content(HtmlText.unescape(post.getContent()))
                 .postStatus(post.getPostStatus().name())
                 .viewCount(post.getViewCount())
                 .anonymous(false)
@@ -111,8 +112,8 @@ public class PostResponse {
 
     public static PostResponse fromRow(Object[] r) {
         Long id = (Long) r[0];
-        String title = (String) r[1];
-        String content = (String) r[2];
+        String title = HtmlText.unescape((String) r[1]);
+        String content = HtmlText.unescape((String) r[2]);
         String postStatus = (r[3] instanceof Enum<?> e) ? e.name() : String.valueOf(r[3]);
         Integer viewCount = (Integer) r[4];
         Boolean anonymous = (Boolean) r[5];

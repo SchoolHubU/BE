@@ -2,6 +2,7 @@ package com.shu.backend.domain.admin.dto;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 import com.shu.backend.domain.post.entity.Post;
+import com.shu.backend.global.util.HtmlText;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -31,7 +32,7 @@ public class AdminPostSummaryResponse {
     private LocalDateTime createdAt;
 
     public static AdminPostSummaryResponse from(Post post) {
-        String content = post.getContent() == null ? "" : post.getContent();
+        String content = HtmlText.unescapeOrEmpty(post.getContent());
         String preview = content.length() > 120 ? content.substring(0, 120) : content;
         Long authorId = post.getUser() != null ? post.getUser().getId() : null;
         String authorLabel = post.getUser() == null
@@ -40,7 +41,7 @@ public class AdminPostSummaryResponse {
 
         return AdminPostSummaryResponse.builder()
                 .postId(post.getId())
-                .title(post.getTitle())
+                .title(HtmlText.unescape(post.getTitle()))
                 .contentPreview(preview)
                 .postStatus(post.getPostStatus().name())
                 .anonymous(false)

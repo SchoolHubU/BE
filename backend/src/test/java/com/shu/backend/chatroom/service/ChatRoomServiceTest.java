@@ -18,8 +18,11 @@ import com.shu.backend.domain.media.entity.Media;
 import com.shu.backend.domain.media.enums.MediaType;
 import com.shu.backend.domain.media.repository.MediaRepository;
 import com.shu.backend.domain.notification.service.NotificationService;
+import com.shu.backend.domain.post.entity.Post;
+import com.shu.backend.domain.post.repository.PostRepository;
 import com.shu.backend.domain.push.service.PushService;
 import com.shu.backend.domain.region.entity.Region;
+import com.shu.backend.domain.report.service.ReportService;
 import com.shu.backend.domain.school.entity.School;
 import com.shu.backend.domain.user.entity.User;
 import com.shu.backend.domain.user.enums.Gender;
@@ -28,6 +31,7 @@ import com.shu.backend.domain.user.enums.UserRole;
 import com.shu.backend.domain.user.enums.UserStatus;
 import com.shu.backend.domain.user.repository.UserRepository;
 import com.shu.backend.domain.usersetting.repository.UserSettingRepository;
+import com.shu.backend.domain.boardprofile.service.BoardDisplayProfileService;
 import com.shu.backend.global.file.FileStorageService;
 import com.shu.backend.global.moderation.ContentModerationService;
 import org.junit.jupiter.api.BeforeEach;
@@ -67,6 +71,9 @@ class ChatFeatureServiceTest {
     @Mock ChatActionRateLimiter chatActionRateLimiter;
     @Mock FileStorageService fileStorageService;
     @Mock ContentModerationService contentModerationService;
+    @Mock ReportService reportService;
+    @Mock PostRepository postRepository;
+    @Mock BoardDisplayProfileService boardDisplayProfileService;
 
     @InjectMocks ChatRoomService chatRoomService;
     @InjectMocks ChatMessageService chatMessageService;
@@ -83,6 +90,10 @@ class ChatFeatureServiceTest {
                 .thenAnswer(invocation -> mockUser(invocation.getArgument(0)));
         lenient().when(userRepository.findById(anyLong()))
                 .thenAnswer(invocation -> Optional.of(mockUser(invocation.getArgument(0))));
+        lenient().when(postRepository.findDetailById(anyLong()))
+                .thenAnswer(invocation -> Optional.of(mockPost(invocation.getArgument(0))));
+        lenient().when(postRepository.findByIdIn(any()))
+                .thenReturn(List.of());
     }
 
     // =========================
@@ -621,6 +632,16 @@ class ChatFeatureServiceTest {
                 .build();
         setId(user, id);
         return user;
+    }
+
+    private static Post mockPost(Long id) {
+        Post post = Post.builder()
+                .title(ROOM_TITLE)
+                .content("content")
+                .user(mockUser(1L))
+                .build();
+        setId(post, id);
+        return post;
     }
 
     private static ChatRoomUser mockCruForList(ChatRoom room) {

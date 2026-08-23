@@ -1,6 +1,7 @@
 package com.shu.backend.domain.poll.dto;
 
 import com.shu.backend.domain.poll.entity.PollOption;
+import com.shu.backend.global.util.HtmlText;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -20,7 +21,7 @@ public class PollOptionResponse {
 
         return PollOptionResponse.builder()
                 .optionId(option.getId())
-                .text(option.getText())
+                .text(HtmlText.unescape(option.getText()))
                 .voteCount(option.getVoteCount())
                 .percentage(percentage)
                 .selectedByMe(option.getId().equals(selectedOptionId))

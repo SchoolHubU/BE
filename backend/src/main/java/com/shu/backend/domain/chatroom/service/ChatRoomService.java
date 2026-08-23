@@ -24,6 +24,7 @@ import com.shu.backend.domain.user.exception.UserException;
 import com.shu.backend.domain.user.exception.status.UserErrorStatus;
 import com.shu.backend.domain.user.repository.UserRepository;
 import com.shu.backend.domain.user.support.UserDisplay;
+import com.shu.backend.global.util.HtmlText;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
@@ -290,7 +291,7 @@ public class ChatRoomService {
 
     private String normalizeRoomTitle(String postTitle, String fallback) {
         if (postTitle != null && !postTitle.isBlank()) {
-            return postTitle;
+            return HtmlText.unescape(postTitle);
         }
         if (fallback != null && !fallback.isBlank()) {
             return fallback;

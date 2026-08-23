@@ -2,6 +2,7 @@ package com.shu.backend.domain.bookmark.dto;
 
 import com.shu.backend.domain.bookmark.entity.Bookmark;
 import com.shu.backend.domain.post.entity.Post;
+import com.shu.backend.global.util.HtmlText;
 import lombok.Builder;
 import lombok.Getter;
 
@@ -22,8 +23,8 @@ public class BookmarkedPostResponse {
         Post post = bookmark.getPost();
         return BookmarkedPostResponse.builder()
                 .postId(post.getId())
-                .title(post.getTitle())
-                .content(post.getContent())
+                .title(HtmlText.unescape(post.getTitle()))
+                .content(HtmlText.unescape(post.getContent()))
                 .postStatus(post.getPostStatus().name())
                 .likeCount(post.getLikeCount())
                 .commentCount(commentCount)

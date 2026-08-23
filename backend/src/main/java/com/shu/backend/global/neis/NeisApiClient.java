@@ -93,17 +93,7 @@ public class NeisApiClient {
             String grade, String classNm,
             String fromDate, String toDate) {
 
-        return fetchPagedRows("hisTimetable", page -> UriComponentsBuilder.fromUriString(baseUrl + "/hisTimetable")
-                .queryParam("KEY", apiKey)
-                .queryParam("Type", "json")
-                .queryParam("pIndex", String.valueOf(page))
-                .queryParam("pSize", "1000")
-                .queryParam("ATPT_OFCDC_SC_CODE", officeCode)
-                .queryParam("SD_SCHUL_CODE", schoolCode)
-                .queryParam("AY", ay)
-                .queryParam("SEM", sem)
-                .queryParam("GRADE", grade)
-                .queryParam("CLASS_NM", classNm)
+        return fetchPagedRows("hisTimetable", page -> timetableBuilder(page, officeCode, schoolCode, ay, sem, grade, classNm)
                 .queryParam("TI_FROM_YMD", fromDate)
                 .queryParam("TI_TO_YMD", toDate)
                 .encode().build().toUriString());
@@ -115,17 +105,7 @@ public class NeisApiClient {
             String grade, String classNm,
             String date, int period) {
 
-        List<Map<String, Object>> exactRows = filterTimetableRows(parseNeisResponse(UriComponentsBuilder.fromUriString(baseUrl + "/hisTimetable")
-                .queryParam("KEY", apiKey)
-                .queryParam("Type", "json")
-                .queryParam("pIndex", "1")
-                .queryParam("pSize", "1000")
-                .queryParam("ATPT_OFCDC_SC_CODE", officeCode)
-                .queryParam("SD_SCHUL_CODE", schoolCode)
-                .queryParam("AY", ay)
-                .queryParam("SEM", sem)
-                .queryParam("GRADE", grade)
-                .queryParam("CLASS_NM", classNm)
+        List<Map<String, Object>> exactRows = filterTimetableRows(parseNeisResponse(timetableBuilder(1, officeCode, schoolCode, ay, sem, grade, classNm)
                 .queryParam("ALL_TI_YMD", date)
                 .queryParam("PERIO", String.valueOf(period))
                 .encode().build().toUriString(), "hisTimetable"), date, period);
@@ -134,17 +114,7 @@ public class NeisApiClient {
             return exactRows;
         }
 
-        return filterTimetableRows(parseNeisResponse(UriComponentsBuilder.fromUriString(baseUrl + "/hisTimetable")
-                .queryParam("KEY", apiKey)
-                .queryParam("Type", "json")
-                .queryParam("pIndex", "1")
-                .queryParam("pSize", "1000")
-                .queryParam("ATPT_OFCDC_SC_CODE", officeCode)
-                .queryParam("SD_SCHUL_CODE", schoolCode)
-                .queryParam("AY", ay)
-                .queryParam("SEM", sem)
-                .queryParam("GRADE", grade)
-                .queryParam("CLASS_NM", classNm)
+        return filterTimetableRows(parseNeisResponse(timetableBuilder(1, officeCode, schoolCode, ay, sem, grade, classNm)
                 .queryParam("TI_FROM_YMD", date)
                 .queryParam("TI_TO_YMD", date)
                 .queryParam("PERIO", String.valueOf(period))
@@ -157,7 +127,23 @@ public class NeisApiClient {
             String grade, String classNm,
             String date) {
 
-        return fetchPagedRows("hisTimetable", page -> UriComponentsBuilder.fromUriString(baseUrl + "/hisTimetable")
+        return fetchPagedRows("hisTimetable", page -> timetableBuilder(page, officeCode, schoolCode, ay, sem, grade, classNm)
+                .queryParam("ALL_TI_YMD", date)
+                .encode().build().toUriString()).stream()
+                .filter(row -> date.equals(String.valueOf(row.getOrDefault("ALL_TI_YMD", ""))))
+                .collect(Collectors.toList());
+    }
+
+    private UriComponentsBuilder timetableBuilder(
+            int page,
+            String officeCode,
+            String schoolCode,
+            String ay,
+            String sem,
+            String grade,
+            String classNm) {
+
+        UriComponentsBuilder builder = UriComponentsBuilder.fromUriString(baseUrl + "/hisTimetable")
                 .queryParam("KEY", apiKey)
                 .queryParam("Type", "json")
                 .queryParam("pIndex", String.valueOf(page))
@@ -165,13 +151,14 @@ public class NeisApiClient {
                 .queryParam("ATPT_OFCDC_SC_CODE", officeCode)
                 .queryParam("SD_SCHUL_CODE", schoolCode)
                 .queryParam("AY", ay)
-                .queryParam("SEM", sem)
                 .queryParam("GRADE", grade)
-                .queryParam("CLASS_NM", classNm)
-                .queryParam("ALL_TI_YMD", date)
-                .encode().build().toUriString()).stream()
-                .filter(row -> date.equals(String.valueOf(row.getOrDefault("ALL_TI_YMD", ""))))
-                .collect(Collectors.toList());
+                .queryParam("CLASS_NM", classNm);
+
+        if (sem != null && !sem.isBlank()) {
+            builder.queryParam("SEM", sem);
+        }
+
+        return builder;
     }
 
     private List<Map<String, Object>> filterTimetableRows(List<Map<String, Object>> rows, String date, int period) {
